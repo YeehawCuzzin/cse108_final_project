@@ -58,11 +58,46 @@ FlowFundAI goes beyond traditional budgeting tools by acting as a financial assi
 
 ---
 
-## Future Development  
+## Future Development
 
-Planned enhancements include:  
+Planned enhancements include:
 
-- Integration with banking APIs  
-- Advanced analytics and predictive insights  
-- Expanded personalization of AI recommendations  
-- Mobile optimization and cross-platform accessibility  
+- Integration with banking APIs
+- Advanced analytics and predictive insights
+- Expanded personalization of AI recommendations
+- Mobile optimization and cross-platform accessibility
+
+---
+
+## Starting up the app 
+
+### Prerequisites
+
+- [Python 3.10+](https://www.python.org/downloads/)
+- [Node.js LTS](https://nodejs.org/)
+
+---
+
+### Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+
+API at `http://localhost:5000`.
+
+---
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App at `http://localhost:5173`.
+
+
