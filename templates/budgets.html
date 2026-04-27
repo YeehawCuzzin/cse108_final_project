@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Budgets — FlowFundAI{% endblock %}
+
+{% block content %}
+<div class="page-header with-action">
+  <div>
+    <h1>Budgets</h1>
+    <p>Set spending limits and track progress by category.</p>
+  </div>
+</div>
+
+<!-- ADD BUDGET -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header"><div class="card-title">Add Budget</div></div>
+  <div class="card-body">
+    <form method="POST" action="/add-budget">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr auto;">
+        <div class="field">
+          <label>Category Name</label>
+          <input type="text" name="name" placeholder="e.g. Food" required/>
+        </div>
+        <div class="field">
+          <label>Monthly Limit ($)</label>
+          <input type="number" name="limit" step="0.01" min="1" placeholder="500.00" required/>
+        </div>
+        <div class="field" style="align-self:end;">
+          <button type="submit" class="primary-btn" style="width:100%;justify-content:center;">Add →</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- BUDGET CARDS -->
+{% if budgets %}
+<div class="budget-grid">
+  {% for b in budgets %}
+    {% set spent = cat_totals.get(b.name, 0) %}
+    {% set remaining = b.limit - spent %}
+    {% set pct = [((spent / b.limit) * 100), 100]|min if b.limit > 0 else 0 %}
+  <div class="budget-card">
+    <div class="budget-top">
+      <div>
+        <h3>{{ b.name }}</h3>
+        <p>Monthly budget</p>
+      </div>
+      <form method="POST" action="/delete-budget/{{ b.id }}">
+        <button type="submit" class="delete-btn" onclick="return confirm('Delete this budget?')">✕</button>
+      </form>
+    </div>
+    <div>
+      <span class="spent" style="color:{% if pct >= 100 %}var(--danger){% else %}var(--text){% endif %}">
+        ${{ "%.2f"|format(spent) }}
+      </span>
+      <span class="limit"> / ${{ "%.2f"|format(b.limit) }}</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill {% if pct >= 100 %}over{% endif %}" style="width:{{ pct|round(1) }}%;"></div>
+    </div>
+    <div class="budget-footer">
+      <span class="used-pill">{{ pct|round(0)|int }}% used</span>
+      <span class="left-text">
+        {% if remaining >= 0 %}${{ "%.2f"|format(remaining) }} left{% else %}${{ "%.2f"|format(remaining|abs) }} over{% endif %}
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <div class="ei"></div>
+    <p>No budgets yet.<br/>Create one above to start tracking your limits.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

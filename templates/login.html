@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log In — FlowFundAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">FlowFund<span>AI</span></div>
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub">Log in to your account to continue.</div>
+
+    {% if error %}
+    <div class="auth-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" name="email" placeholder="you@example.com" required/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required/>
+      </div>
+      <button type="submit" class="auth-submit">Log In →</button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/register">Create one free</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

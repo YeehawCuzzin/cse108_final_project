@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FlowFundAI — Smarter Money, Effortlessly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0f0d;
+      --surface:   #111815;
+      --card:      #161e1a;
+      --border:    #1f2e28;
+      --accent:    #00e07a;
+      --accent2:   #00b85e;
+      --text:      #e8f2ec;
+      --muted:     #6a8a76;
+      --danger:    #ff5c5c;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: .45;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 2.5rem;
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,15,13,.75);
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-weight: 800; font-size: 1.35rem;
+      color: var(--accent); letter-spacing: -.02em;
+    }
+    .logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+    .btn-ghost {
+      background: none; border: 1px solid var(--border);
+      color: var(--text); padding: .5rem 1.2rem;
+      border-radius: 8px; cursor: pointer;
+      font-family: var(--font-body); font-size: .9rem;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      background: var(--accent); color: #021a0e;
+      border: none; padding: .55rem 1.4rem;
+      border-radius: 8px; cursor: pointer;
+      font-family: var(--font-head); font-weight: 700; font-size: .9rem;
+      transition: background .2s, transform .15s;
+    }
+    .btn-primary:hover { background: #00ff8a; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 7rem 2rem 4rem;
+      position: relative;
+    }
+    .hero-glow {
+      position: absolute; top: 20%; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(0,224,122,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(0,224,122,.08); border: 1px solid rgba(0,224,122,.25);
+      color: var(--accent); border-radius: 99px;
+      padding: .35rem 1rem; font-size: .8rem; font-weight: 500;
+      margin-bottom: 2rem;
+      animation: fadeUp .6s ease both;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800; line-height: 1.05;
+      letter-spacing: -.03em;
+      max-width: 900px;
+      animation: fadeUp .7s .1s ease both;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+
+    .hero-sub {
+      margin-top: 1.5rem;
+      color: var(--muted); font-size: 1.15rem; font-weight: 300;
+      max-width: 560px; line-height: 1.7;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-cta {
+      margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .btn-large {
+      padding: .85rem 2.2rem; font-size: 1rem; border-radius: 10px;
+    }
+
+    /* ─── STATS BAR ─── */
+    .stats {
+      display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center;
+      margin-top: 4rem; padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      animation: fadeUp .7s .4s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-label { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+
+    /* ─── FEATURES ─── */
+    .section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: .78rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800; letter-spacing: -.02em; line-height: 1.1;
+      max-width: 600px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      transition: border-color .25s, transform .25s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,224,122,.04), transparent);
+      opacity: 0; transition: opacity .25s;
+    }
+    .feature-card:hover { border-color: rgba(0,224,122,.35); transform: translateY(-4px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(0,224,122,.1); border: 1px solid rgba(0,224,122,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.2rem;
+    }
+    .feature-card h3 {
+      font-family: var(--font-head); font-size: 1.1rem; font-weight: 700;
+      margin-bottom: .5rem;
+    }
+    .feature-card p { color: var(--muted); font-size: .92rem; line-height: 1.6; }
+
+    /* ─── HOW IT WORKS ─── */
+    .how-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 2rem; margin-top: 3rem; counter-reset: steps;
+    }
+    .how-step {
+      position: relative; padding-left: 1rem;
+      border-left: 2px solid var(--border);
+      transition: border-color .2s;
+    }
+    .how-step:hover { border-color: var(--accent); }
+    .step-num {
+      font-family: var(--font-head); font-size: 2.5rem; font-weight: 800;
+      color: rgba(0,224,122,.15); line-height: 1;
+    }
+    .how-step h3 { font-family: var(--font-head); font-size: 1rem; font-weight: 700; margin: .5rem 0 .4rem; }
+    .how-step p { color: var(--muted); font-size: .88rem; }
+
+    /* ─── CTA BANNER ─── */
+    .cta-banner {
+      margin: 2rem auto 6rem; max-width: 900px; padding: 0 2rem;
+    }
+    .cta-inner {
+      background: linear-gradient(135deg, #0d2218, #071510);
+      border: 1px solid rgba(0,224,122,.25);
+      border-radius: 24px; padding: 4rem 3rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-inner::before {
+      content: ''; position: absolute; top: -50%; left: 50%;
+      transform: translateX(-50%);
+      width: 500px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,224,122,.12), transparent 70%);
+    }
+    .cta-inner h2 {
+      font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800; letter-spacing: -.02em; margin-bottom: 1rem;
+    }
+    .cta-inner p { color: var(--muted); margin-bottom: 2rem; font-size: 1.05rem; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      color: var(--muted); font-size: .85rem;
+    }
+    .footer-logo { font-family: var(--font-head); font-weight: 800; color: var(--accent); }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px;
+      position: relative;
+      transform: translateY(20px); transition: transform .25s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none; color: var(--muted);
+      font-size: 1.3rem; cursor: pointer; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-title {
+      font-family: var(--font-head); font-size: 1.6rem; font-weight: 800;
+      letter-spacing: -.02em; margin-bottom: .3rem;
+    }
+    .modal-sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    .tabs {
+      display: flex; background: var(--surface); border-radius: 10px;
+      padding: 4px; margin-bottom: 1.8rem; gap: 4px;
+    }
+    .tab {
+      flex: 1; padding: .5rem; border: none; border-radius: 8px;
+      background: none; color: var(--muted); cursor: pointer;
+      font-family: var(--font-body); font-size: .9rem; font-weight: 500;
+      transition: background .2s, color .2s;
+    }
+    .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: .4rem; font-weight: 500; }
+    .form-group input {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: .75rem 1rem; color: var(--text);
+      font-family: var(--font-body); font-size: .95rem;
+      outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+    .form-group input::placeholder { color: var(--muted); }
+
+    .form-error {
+      background: rgba(255,92,92,.1); border: 1px solid rgba(255,92,92,.3);
+      color: var(--danger); border-radius: 8px; padding: .7rem 1rem;
+      font-size: .85rem; margin-bottom: 1rem; display: none;
+    }
+    .form-error.show { display: block; }
+    .form-success {
+      background: rgba(0,224,122,.1); border: 1px solid rgba(0,224,122,.25);
+      color: var(--accent); border-radius: 8px; padding: .7rem 1rem;
+      font-size: .85rem; margin-bottom: 1rem; display: none;
+    }
+    .form-success.show { display: block; }
+
+    .btn-submit {
+      width: 100%; padding: .85rem;
+      background: var(--accent); color: #021a0e;
+      border: none; border-radius: 10px; cursor: pointer;
+      font-family: var(--font-head); font-weight: 700; font-size: 1rem;
+      transition: background .2s, transform .15s;
+      margin-top: .5rem;
+    }
+    .btn-submit:hover { background: #00ff8a; transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.2rem 0; }
+    .divider span { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── DASHBOARD REDIRECT MSG ─── */
+    .redirect-msg {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: var(--card); border: 1px solid rgba(0,224,122,.3);
+      color: var(--accent); padding: .75rem 1.5rem; border-radius: 10px;
+      font-size: .9rem; font-weight: 500; z-index: 999;
+      display: none; animation: fadeUp .3s ease;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.2rem; }
+      .hero { padding: 6rem 1.2rem 3rem; }
+      .stats { gap: 1.5rem; }
+      .modal { margin: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">FlowFund<span>AI</span></div>
+  <div class="nav-links">
+    <button class="btn-ghost" onclick="openModal('login')">Log In</button>
+    <button class="btn-primary" onclick="openModal('register')">Get Started</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><span class="badge-dot"></span> AI-Powered Budgeting</div>
+  <h1>Your money,<br/><em>finally intelligent.</em></h1>
+  <p class="hero-sub">FlowFundAI tracks your spending, learns your habits, and gives you an AI financial advisor in your pocket — for free.</p>
+  <div class="hero-cta">
+    <button class="btn-primary btn-large" onclick="openModal('register')">Start for Free →</button>
+    <button class="btn-ghost btn-large" onclick="document.getElementById('features').scrollIntoView()">See How It Works</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free to Use</div></div>
+    <div class="stat"><div class="stat-num">AI</div><div class="stat-label">Powered Insights</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Expense Categories</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Hidden Fees</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div id="features" class="section">
+  <div class="section-label">What You Get</div>
+  <h2 class="section-title">Everything you need to master your finances</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💸</div>
+      <h3>Expense Tracking</h3>
+      <p>Log every transaction in seconds. Categorize, date-stamp, and view your full spending history at a glance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>AI Financial Assistant</h3>
+      <p>Ask anything. Get personalized advice on saving, cutting spending, and building better financial habits.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Smart Dashboard</h3>
+      <p>Visual breakdowns of where your money goes. Spot trends and patterns before they become problems.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔁</div>
+      <h3>Subscription Tracker</h3>
+      <p>Never lose track of recurring charges again. See your monthly subscription costs all in one place.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Savings Goals</h3>
+      <p>Set targets and track progress. FlowFundAI recommends how much to save each week to hit your goals.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Private & Secure</h3>
+      <p>Your data is yours. Secure authentication ensures only you can access your financial information.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" style="padding-top:0">
+  <div class="section-label">The Process</div>
+  <h2 class="section-title">From chaos to clarity in 4 steps</h2>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="step-num">01</div>
+      <h3>Create Your Account</h3>
+      <p>Sign up in under 30 seconds. No credit card, no setup fees.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-num">02</div>
+      <h3>Log Your Expenses</h3>
+      <p>Add transactions manually or import them. Categorize with one tap.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-num">03</div>
+      <h3>AI Analyzes Patterns</h3>
+      <p>Our AI reviews your spending behavior and surfaces key insights.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-num">04</div>
+      <h3>Take Control</h3>
+      <p>Get recommendations and act on them. Watch your finances improve.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <div class="cta-inner">
+    <h2>Ready to take control<br/>of your money?</h2>
+    <p>Join thousands of users making smarter financial decisions every day.</p>
+    <button class="btn-primary btn-large" onclick="openModal('register')">Create Free Account →</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">FlowFundAI</div>
+  <div>© 2025 FlowFundAI. Built for real people, real budgets.</div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Welcome</div>
+    <div class="modal-sub" id="modalSub">Start your financial journey today.</div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Log In</button>
+      <button class="tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="formError" class="form-error"></div>
+    <div id="formSuccess" class="form-success"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <button class="btn-submit" id="loginBtn" onclick="handleLogin()">Log In</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Jane Smith" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Min. 6 characters" />
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="regConfirm" placeholder="••••••••" />
+      </div>
+      <button class="btn-submit" id="registerBtn" onclick="handleRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="redirect-msg" id="redirectMsg">✓ Redirecting to dashboard…</div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  // ── ✏️  PASTE YOUR FIREBASE CONFIG BELOW ──────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT.firebaseapp.com",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId:             "YOUR_APP_ID"
+  };
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Redirect already-logged-in users
+  onAuthStateChanged(auth, user => {
+    if (user) window.location.href = '/dashboard';
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function showError(msg)   { const e=document.getElementById('formError');   e.textContent=msg; e.classList.add('show'); document.getElementById('formSuccess').classList.remove('show'); }
+  function showSuccess(msg) { const e=document.getElementById('formSuccess'); e.textContent=msg; e.classList.add('show'); document.getElementById('formError').classList.remove('show'); }
+  function clearMessages()  { document.getElementById('formError').classList.remove('show'); document.getElementById('formSuccess').classList.remove('show'); }
+  function setLoading(btnId, loading) {
+    const b = document.getElementById(btnId);
+    b.disabled = loading; b.textContent = loading ? 'Please wait…' : (btnId==='loginBtn' ? 'Log In' : 'Create Account');
+  }
+
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
+  window.handleLogin = async () => {
+    clearMessages();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPassword').value;
+    if (!email || !pass) return showError('Please fill in all fields.');
+    setLoading('loginBtn', true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      showSuccess('Login successful! Redirecting…');
+      document.getElementById('redirectMsg').style.display = 'block';
+      setTimeout(() => window.location.href = 'dashboard.html', 1200);
+    } catch (err) {
+      setLoading('loginBtn', false);
+      showError(friendlyError(err.code));
+    }
+  };
+
+  // ── REGISTER ─────────────────────────────────────────────────────────────
+  window.handleRegister = async () => {
+    clearMessages();
+    const name    = document.getElementById('regName').value.trim();
+    const email   = document.getElementById('regEmail').value.trim();
+    const pass    = document.getElementById('regPassword').value;
+    const confirm = document.getElementById('regConfirm').value;
+    if (!name || !email || !pass || !confirm) return showError('Please fill in all fields.');
+    if (pass.length < 6)  return showError('Password must be at least 6 characters.');
+    if (pass !== confirm) return showError('Passwords do not match.');
+    setLoading('registerBtn', true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      showSuccess('Account created! Redirecting…');
+      document.getElementById('redirectMsg').style.display = 'block';
+      setTimeout(() => window.location.href = 'dashboard.html', 1200);
+    } catch (err) {
+      setLoading('registerBtn', false);
+      showError(friendlyError(err.code));
+    }
+  };
+
+  // ── Error messages ────────────────────────────────────────────────────────
+  function friendlyError(code) {
+    const map = {
+      'auth/email-already-in-use':  'That email is already registered. Try logging in.',
+      'auth/invalid-email':          'Please enter a valid email address.',
+      'auth/wrong-password':         'Incorrect password. Please try again.',
+      'auth/user-not-found':         'No account found with that email.',
+      'auth/weak-password':          'Password should be at least 6 characters.',
+      'auth/too-many-requests':      'Too many attempts. Please try again later.',
+      'auth/invalid-credential':     'Invalid email or password.',
+    };
+    return map[code] || 'Something went wrong. Please try again.';
+  }
+</script>
+
+<script>
+  // ── Modal controls ──────────────────────────────────────────────────────
+  function openModal(tab) {
+    document.getElementById('authModal').classList.add('open');
+    switchTab(tab || 'login');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('authModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('authModal')) closeModal();
+  }
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('loginForm').style.display    = isLogin ? '' : 'none';
+    document.getElementById('registerForm').style.display = isLogin ? 'none' : '';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('modalSub').textContent = isLogin
+      ? 'Welcome back. Log in to your account.'
+      : 'Start your financial journey today.';
+    document.getElementById('formError').classList.remove('show');
+    document.getElementById('formSuccess').classList.remove('show');
+  }
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.handleOverlayClick = handleOverlayClick;
+  window.switchTab = switchTab;
+
+  // Keyboard close
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
