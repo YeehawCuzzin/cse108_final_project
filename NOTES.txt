@@ -1,0 +1,16 @@
+NOTE FROM PRANAV
+
+Firebase -> Flask auth swap
+-----------------------------------------
+The landing page (templates/index.html) originally used Firebase for authentication
+in the login/register modal. The Firebase config contained placeholder values
+("YOUR_API_KEY", etc.), which caused "Something went wrong. Please try again."
+on every login/register attempt.
+
+Fix I did: Removed the Firebase SDK and rewired the modal's handleLogin() and
+handleRegister() functions to POST directly to the Flask backend:
+  - POST /login (email + password)
+  - POST /register (name + email + password + confirm)
+
+Auth is now handled entirely by app.py using Flask sessions + SQLite + Werkzeug
+password hashing. No Firebase dependency exists in the project at this point.

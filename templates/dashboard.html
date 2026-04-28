@@ -267,16 +267,16 @@
     <div class="sidebar-logo">FlowFund<span>AI</span></div>
     <nav class="sidebar-nav">
       <div class="nav-item active" onclick="setPage('dashboard')">
-        <span class="icon">📊</span> Dashboard
+        <span class="icon">▦</span> Dashboard
       </div>
       <div class="nav-item" onclick="setPage('expenses')">
-        <span class="icon">💸</span> Expenses
+        <span class="icon">$</span> Expenses
       </div>
       <div class="nav-item" onclick="setPage('subscriptions')">
-        <span class="icon">🔁</span> Subscriptions
+        <span class="icon">↺</span> Subscriptions
       </div>
       <div class="nav-item" onclick="setPage('ai')">
-        <span class="icon">🤖</span> AI Assistant
+        <span class="icon">✦</span> AI Assistant
       </div>
     </nav>
     <div class="sidebar-user">
@@ -285,7 +285,7 @@
         <div class="user-name" id="userName">Loading…</div>
         <div class="user-role">Member</div>
       </div>
-      <button class="logout-btn" onclick="handleLogout()" title="Sign out">⏻</button>
+      <button class="logout-btn" onclick="handleLogout()" title="Sign out">→</button>
     </div>
   </aside>
 
@@ -330,7 +330,7 @@
         <!-- ADD EXPENSE -->
         <div class="panel section-gap">
           <div class="panel-header">
-            <div class="panel-title">➕ Add Expense</div>
+            <div class="panel-title">Add Expense</div>
           </div>
           <div class="panel-body">
             <div class="expense-form">
@@ -345,15 +345,15 @@
               <div class="field">
                 <label>Category</label>
                 <select id="expCat">
-                  <option value="Food">🍔 Food</option>
-                  <option value="Transport">🚗 Transport</option>
-                  <option value="Housing">🏠 Housing</option>
-                  <option value="Entertainment">🎮 Entertainment</option>
-                  <option value="Health">💊 Health</option>
-                  <option value="Shopping">🛍️ Shopping</option>
-                  <option value="Education">📚 Education</option>
-                  <option value="Subscriptions">🔁 Subscriptions</option>
-                  <option value="Other">📌 Other</option>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Housing">Housing</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Health">Health</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Education">Education</option>
+                  <option value="Subscriptions">Subscriptions</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div class="field">
@@ -368,13 +368,13 @@
         <!-- EXPENSE LIST -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">🧾 Recent Expenses</div>
+            <div class="panel-title">Recent Expenses</div>
             <span style="font-size:.78rem;color:var(--muted)" id="expCount">0 items</span>
           </div>
           <div class="panel-body">
             <div class="expense-list" id="expenseList">
               <div class="empty-state">
-                <div class="empty-icon">💰</div>
+                <div class="empty-icon">—</div>
                 <p>No expenses yet.<br/>Add your first one above!</p>
               </div>
             </div>
@@ -388,7 +388,7 @@
         <!-- CATEGORY BREAKDOWN -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">📂 By Category</div>
+            <div class="panel-title">By Category</div>
           </div>
           <div class="panel-body">
             <div class="cat-list" id="catList">
@@ -403,17 +403,8 @@
             <div class="ai-dot"></div>
             <div class="ai-title">AI Financial Assistant</div>
           </div>
-          <div class="ai-messages" id="aiMessages">
-            <div class="msg ai">👋 Hi! I'm your FlowFundAI assistant. I can analyze your spending, suggest savings strategies, and answer financial questions. What would you like to know?</div>
-          </div>
-          <div class="quick-chips">
-            <div class="chip" onclick="askAI('How can I save more money?')">Save more 💡</div>
-            <div class="chip" onclick="askAI('Analyze my spending habits')">Analyze spending 📊</div>
-            <div class="chip" onclick="askAI('Tips to reduce food expenses')">Cut food costs 🍔</div>
-          </div>
-          <div class="ai-input-row">
-            <input class="ai-input" id="aiInput" placeholder="Ask a financial question…" onkeydown="if(event.key==='Enter')sendAIMessage()"/>
-            <button class="ai-send" id="aiSendBtn" onclick="sendAIMessage()">→</button>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--muted);font-size:.9rem;text-align:center;">
+            AI Assistant coming soon.
           </div>
         </div>
 
@@ -424,91 +415,73 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth, onAuthStateChanged, signOut
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import {
-    getFirestore, collection, addDoc, deleteDoc, doc,
-    query, where, orderBy, onSnapshot, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script>
+  const catIcons  = {Food:'',Transport:'',Housing:'',Entertainment:'',Health:'',Shopping:'',Education:'',Subscriptions:'',Other:''};
+  const catColors = {Food:'#f97316',Transport:'#3b82f6',Housing:'#8b5cf6',Entertainment:'#ec4899',Health:'#10b981',Shopping:'#f59e0b',Education:'#06b6d4',Subscriptions:'#00e07a',Other:'#6b7280'};
 
-  // ── ✏️  PASTE YOUR FIREBASE CONFIG HERE (same as index.html) ─────────────
-  const firebaseConfig = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_PROJECT.firebaseapp.com",
-    projectId:         "YOUR_PROJECT_ID",
-    storageBucket:     "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId:             "YOUR_APP_ID"
-  };
-  // ──────────────────────────────────────────────────────────────────────────
+  let expenses = [];
 
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
-
-  let currentUser = null;
-  let unsubscribe = null;
-  let expenses    = [];
-
-  // ── AUTH GUARD ──────────────────────────────────────────────────────────
-  onAuthStateChanged(auth, user => {
-    if (!user) { window.location.href = 'index.html'; return; }
-    currentUser = user;
+  // BOOT 
+  async function boot() {
+    try {
+      const res  = await fetch('/api/me');
+      if (!res.ok) { window.location.href = '/'; return; }
+      const data = await res.json();
+      const name = data.name || data.email.split('@')[0];
+      document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('userName').textContent   = name;
+    } catch {
+      window.location.href = '/';
+      return;
+    }
+    await loadExpenses();
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('appRoot').style.display = 'flex';
-    const initials = (user.displayName || user.email).charAt(0).toUpperCase();
-    document.getElementById('userAvatar').textContent = initials;
-    document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
-    startListening();
-  });
-
-  // ── REAL-TIME LISTENER ──────────────────────────────────────────────────
-  function startListening() {
-    const q = query(
-      collection(db, 'expenses'),
-      where('uid', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
-    );
-    if (unsubscribe) unsubscribe();
-    unsubscribe = onSnapshot(q, snap => {
-      expenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderExpenses();
-      renderStats();
-      renderCategories();
-    });
+    document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
   }
 
-  // ── ADD EXPENSE ─────────────────────────────────────────────────────────
+  // LOAD EXPENSES
+  async function loadExpenses() {
+    const res  = await fetch('/api/transactions');
+    const data = await res.json();
+    expenses   = data.transactions || [];
+    renderExpenses();
+    renderStats();
+    renderCategories();
+  }
+
+  // ADD EXPENSE 
   window.addExpense = async () => {
     const desc   = document.getElementById('expDesc').value.trim();
     const amount = parseFloat(document.getElementById('expAmount').value);
     const cat    = document.getElementById('expCat').value;
-    const date   = document.getElementById('expDate').value;
+    const date   = document.getElementById('expDate').value || new Date().toISOString().split('T')[0];
     if (!desc || isNaN(amount) || amount <= 0) return showToast('⚠️ Please fill in description & amount.', true);
-    await addDoc(collection(db, 'expenses'), {
-      uid: currentUser.uid, desc, amount, cat,
-      date: date || new Date().toISOString().split('T')[0],
-      createdAt: serverTimestamp()
+    const res = await fetch('/api/transactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: desc, amount, category: cat, date })
     });
-    document.getElementById('expDesc').value = '';
-    document.getElementById('expAmount').value = '';
-    showToast('✓ Expense added!');
+    if (res.ok) {
+      document.getElementById('expDesc').value   = '';
+      document.getElementById('expAmount').value = '';
+      showToast('✓ Expense added!');
+      await loadExpenses();
+    } else {
+      showToast('⚠️ Failed to add expense.', true);
+    }
   };
 
-  // ── DELETE EXPENSE ──────────────────────────────────────────────────────
+  // DELETE EXPENSE
   window.deleteExpense = async (id) => {
-    await deleteDoc(doc(db, 'expenses', id));
-    showToast('🗑 Expense removed.');
+    const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast('🗑 Expense removed.');
+      await loadExpenses();
+    }
   };
 
-  // ── RENDER ──────────────────────────────────────────────────────────────
-  const catIcons = {Food:'🍔',Transport:'🚗',Housing:'🏠',Entertainment:'🎮',Health:'💊',Shopping:'🛍️',Education:'📚',Subscriptions:'🔁',Other:'📌'};
-  const catColors= {Food:'#f97316',Transport:'#3b82f6',Housing:'#8b5cf6',Entertainment:'#ec4899',Health:'#10b981',Shopping:'#f59e0b',Education:'#06b6d4',Subscriptions:'#00e07a',Other:'#6b7280'};
-
+  // RENDER
   function renderExpenses() {
     const list = document.getElementById('expenseList');
     document.getElementById('expCount').textContent = `${expenses.length} item${expenses.length!==1?'s':''}`;
@@ -518,37 +491,37 @@
     }
     list.innerHTML = expenses.slice(0,20).map(e => `
       <div class="expense-item">
-        <div class="exp-icon" style="background:${catColors[e.cat]||'#6b7280'}22;color:${catColors[e.cat]||'#aaa'}">${catIcons[e.cat]||'📌'}</div>
+        <div class="exp-icon" style="background:${catColors[e.category]||'#6b7280'}22;color:${catColors[e.category]||'#aaa'}">${e.category.charAt(0)}</div>
         <div class="exp-info">
-          <div class="exp-name">${e.desc}</div>
+          <div class="exp-name">${e.description}</div>
           <div class="exp-meta">${e.date}</div>
         </div>
-        <span class="exp-cat">${e.cat}</span>
-        <div class="exp-amount">-$${e.amount.toFixed(2)}</div>
-        <button class="exp-delete" onclick="deleteExpense('${e.id}')" title="Delete">✕</button>
+        <span class="exp-cat">${e.category}</span>
+        <div class="exp-amount">-$${parseFloat(e.amount).toFixed(2)}</div>
+        <button class="exp-delete" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
       </div>
     `).join('');
   }
 
   function renderStats() {
-    const total = expenses.reduce((s,e) => s + e.amount, 0);
+    const total = expenses.reduce((s,e) => s + parseFloat(e.amount), 0);
     const now   = new Date();
     const month = expenses.filter(e => {
       const d = new Date(e.date); return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
-    }).reduce((s,e) => s+e.amount, 0);
-    const cats  = {};
-    expenses.forEach(e => { cats[e.cat] = (cats[e.cat]||0) + e.amount; });
-    const top   = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('totalSpent').textContent  = `$${total.toFixed(2)}`;
-    document.getElementById('monthSpent').textContent  = `$${month.toFixed(2)}`;
-    document.getElementById('txCount').textContent     = expenses.length;
-    document.getElementById('topCat').textContent      = top ? `${catIcons[top[0]]||''} ${top[0]}` : '—';
-    document.getElementById('monthName').textContent   = now.toLocaleString('default',{month:'long'});
+    }).reduce((s,e) => s + parseFloat(e.amount), 0);
+    const cats = {};
+    expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + parseFloat(e.amount); });
+    const top = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('totalSpent').textContent = `$${total.toFixed(2)}`;
+    document.getElementById('monthSpent').textContent = `$${month.toFixed(2)}`;
+    document.getElementById('txCount').textContent    = expenses.length;
+    document.getElementById('topCat').textContent     = top ? top[0] : '—';
+    document.getElementById('monthName').textContent  = now.toLocaleString('default',{month:'long'});
   }
 
   function renderCategories() {
     const cats = {};
-    expenses.forEach(e => { cats[e.cat] = (cats[e.cat]||0) + e.amount; });
+    expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + parseFloat(e.amount); });
     const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     const max    = sorted[0]?.[1] || 1;
     const el     = document.getElementById('catList');
@@ -559,7 +532,7 @@
     el.innerHTML = sorted.map(([cat, amt]) => `
       <div class="cat-item">
         <div class="cat-row">
-          <div class="cat-name">${catIcons[cat]||'📌'} ${cat}</div>
+          <div class="cat-name">${cat}</div>
           <div class="cat-amount">$${amt.toFixed(2)}</div>
         </div>
         <div class="cat-bar-bg"><div class="cat-bar" style="width:${(amt/max*100).toFixed(1)}%;background:${catColors[cat]||'var(--accent)'}"></div></div>
@@ -567,113 +540,25 @@
     `).join('');
   }
 
-  // ── LOGOUT ──────────────────────────────────────────────────────────────
-  window.handleLogout = async () => {
-    if (unsubscribe) unsubscribe();
-    await signOut(auth);
-    window.location.href = 'index.html';
-  };
+  // LOGOUT
+  window.handleLogout = () => { window.location.href = '/logout'; };
 
-  // ── AI ASSISTANT (Mock) ─────────────────────────────────────────────────
-  const aiResponses = {
-    default: [
-      "Based on your spending patterns, I recommend setting aside 20% of your income each month as savings.",
-      "One of the most effective ways to save money is to track every expense — which you're already doing! Great start.",
-      "Consider the 50/30/20 rule: 50% needs, 30% wants, 20% savings & debt repayment.",
-      "Small daily expenses add up fast. A $5 coffee every day is $1,825 a year!",
-      "Look into high-yield savings accounts — they can earn 10-20x more interest than standard accounts.",
-    ],
-    food: [
-      "Meal prepping on Sundays can save $200–$400 per month on food expenses.",
-      "Cooking at home vs eating out saves the average person over $3,000 per year.",
-      "Try the 'restaurant budget' method: set a monthly limit for dining out and track it.",
-    ],
-    save: [
-      "Start with an emergency fund: aim for 3–6 months of expenses before investing.",
-      "Automate your savings — set up automatic transfers right after each paycheck.",
-      "Cut subscriptions you rarely use. Most people waste $50–$100/month on unused services.",
-      "The best time to start saving was yesterday. The second best time is today!",
-    ],
-    analyze: () => {
-      if (!expenses.length) return "Add some expenses first and I'll analyze your spending patterns!";
-      const cats = {};
-      expenses.forEach(e => { cats[e.cat] = (cats[e.cat]||0) + e.amount; });
-      const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-      const total  = expenses.reduce((s,e)=>s+e.amount,0);
-      const top    = sorted[0];
-      return `📊 Here's your spending analysis:\n\nYou've logged $${total.toFixed(2)} across ${expenses.length} transaction${expenses.length!==1?'s':''}.\n\nYour biggest category is **${top[0]}** at $${top[1].toFixed(2)} (${((top[1]/total)*100).toFixed(0)}% of total spending).\n\n${sorted.length > 1 ? `Consider setting a budget cap for ${top[0]} to free up cash for savings.` : 'Keep tracking to get more personalized insights!'}`;
-    }
-  };
-
-  window.askAI = (q) => {
-    document.getElementById('aiInput').value = q;
-    sendAIMessage();
-  };
-
-  window.sendAIMessage = () => {
-    const input = document.getElementById('aiInput');
-    const msg   = input.value.trim();
-    if (!msg) return;
-    input.value = '';
-    appendMsg(msg, 'user');
-    const typing = appendTyping();
-    document.getElementById('aiSendBtn').disabled = true;
-    setTimeout(() => {
-      typing.remove();
-      let reply;
-      const lc = msg.toLowerCase();
-      if (lc.includes('analyz') || lc.includes('habit') || lc.includes('pattern')) {
-        reply = typeof aiResponses.analyze === 'function' ? aiResponses.analyze() : aiResponses.analyze;
-      } else if (lc.includes('food') || lc.includes('eat') || lc.includes('grocery') || lc.includes('restaurant')) {
-        reply = aiResponses.food[Math.floor(Math.random()*aiResponses.food.length)];
-      } else if (lc.includes('save') || lc.includes('saving') || lc.includes('budget') || lc.includes('money')) {
-        reply = aiResponses.save[Math.floor(Math.random()*aiResponses.save.length)];
-      } else {
-        reply = aiResponses.default[Math.floor(Math.random()*aiResponses.default.length)];
-      }
-      appendMsg(reply, 'ai');
-      document.getElementById('aiSendBtn').disabled = false;
-    }, 1200 + Math.random()*600);
-  };
-
-  function appendMsg(text, type) {
-    const msgs = document.getElementById('aiMessages');
-    const div  = document.createElement('div');
-    div.className = `msg ${type}`;
-    div.textContent = text;
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-    return div;
-  }
-  function appendTyping() {
-    const msgs = document.getElementById('aiMessages');
-    const div  = document.createElement('div');
-    div.className = 'msg ai';
-    div.innerHTML = `<div class="msg-typing"><span></span><span></span><span></span></div>`;
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-    return div;
-  }
-
-  // ── TOAST ────────────────────────────────────────────────────────────────
+  // TOAST
   window.showToast = (msg, err=false) => {
     const t = document.getElementById('toast');
-    t.textContent = msg;
+    t.textContent       = msg;
     t.style.borderColor = err ? 'rgba(255,92,92,.3)' : 'rgba(0,224,122,.3)';
     t.style.color       = err ? 'var(--danger)' : 'var(--accent)';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
   };
 
-  // Set today as default date
-  document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
-</script>
-
-<script>
   window.setPage = (page) => {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     event.currentTarget.classList.add('active');
   };
+
+  boot();
 </script>
 </body>
 </html>

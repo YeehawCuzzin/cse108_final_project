@@ -496,37 +496,7 @@
 
 <div class="redirect-msg" id="redirectMsg">✓ Redirecting to dashboard…</div>
 
-<!-- FIREBASE SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    updateProfile,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  // ── ✏️  PASTE YOUR FIREBASE CONFIG BELOW ──────────────────────────────────
-  const firebaseConfig = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_PROJECT.firebaseapp.com",
-    projectId:         "YOUR_PROJECT_ID",
-    storageBucket:     "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId:             "YOUR_APP_ID"
-  };
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  // Redirect already-logged-in users
-  onAuthStateChanged(auth, user => {
-    if (user) window.location.href = '/dashboard';
-  });
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
+<script>
   function showError(msg)   { const e=document.getElementById('formError');   e.textContent=msg; e.classList.add('show'); document.getElementById('formSuccess').classList.remove('show'); }
   function showSuccess(msg) { const e=document.getElementById('formSuccess'); e.textContent=msg; e.classList.add('show'); document.getElementById('formError').classList.remove('show'); }
   function clearMessages()  { document.getElementById('formError').classList.remove('show'); document.getElementById('formSuccess').classList.remove('show'); }
@@ -535,7 +505,6 @@
     b.disabled = loading; b.textContent = loading ? 'Please wait…' : (btnId==='loginBtn' ? 'Log In' : 'Create Account');
   }
 
-  // ── LOGIN ─────────────────────────────────────────────────────────────────
   window.handleLogin = async () => {
     clearMessages();
     const email = document.getElementById('loginEmail').value.trim();
@@ -543,17 +512,28 @@
     if (!email || !pass) return showError('Please fill in all fields.');
     setLoading('loginBtn', true);
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      showSuccess('Login successful! Redirecting…');
-      document.getElementById('redirectMsg').style.display = 'block';
-      setTimeout(() => window.location.href = 'dashboard.html', 1200);
-    } catch (err) {
+      const res  = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ email, password: pass }),
+        redirect: 'follow'
+      });
+      if (res.ok && res.url.includes('/dashboard')) {
+        showSuccess('Login successful! Redirecting…');
+        document.getElementById('redirectMsg').style.display = 'block';
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+      } else {
+        const text = await res.text();
+        const match = text.match(/class="auth-error"[^>]*>(.*?)<\/div>/s);
+        showError(match ? match[1].trim() : 'Invalid email or password.');
+        setLoading('loginBtn', false);
+      }
+    } catch {
+      showError('Could not reach the server. Please try again.');
       setLoading('loginBtn', false);
-      showError(friendlyError(err.code));
     }
   };
 
-  // ── REGISTER ─────────────────────────────────────────────────────────────
   window.handleRegister = async () => {
     clearMessages();
     const name    = document.getElementById('regName').value.trim();
@@ -565,30 +545,27 @@
     if (pass !== confirm) return showError('Passwords do not match.');
     setLoading('registerBtn', true);
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(cred.user, { displayName: name });
-      showSuccess('Account created! Redirecting…');
-      document.getElementById('redirectMsg').style.display = 'block';
-      setTimeout(() => window.location.href = 'dashboard.html', 1200);
-    } catch (err) {
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ name, email, password: pass, confirm }),
+        redirect: 'follow'
+      });
+      if (res.ok && res.url.includes('/dashboard')) {
+        showSuccess('Account created! Redirecting…');
+        document.getElementById('redirectMsg').style.display = 'block';
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+      } else {
+        const text = await res.text();
+        const match = text.match(/class="auth-error"[^>]*>(.*?)<\/div>/s);
+        showError(match ? match[1].trim() : 'Could not create account. Please try again.');
+        setLoading('registerBtn', false);
+      }
+    } catch {
+      showError('Could not reach the server. Please try again.');
       setLoading('registerBtn', false);
-      showError(friendlyError(err.code));
     }
   };
-
-  // ── Error messages ────────────────────────────────────────────────────────
-  function friendlyError(code) {
-    const map = {
-      'auth/email-already-in-use':  'That email is already registered. Try logging in.',
-      'auth/invalid-email':          'Please enter a valid email address.',
-      'auth/wrong-password':         'Incorrect password. Please try again.',
-      'auth/user-not-found':         'No account found with that email.',
-      'auth/weak-password':          'Password should be at least 6 characters.',
-      'auth/too-many-requests':      'Too many attempts. Please try again later.',
-      'auth/invalid-credential':     'Invalid email or password.',
-    };
-    return map[code] || 'Something went wrong. Please try again.';
-  }
 </script>
 
 <script>

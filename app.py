@@ -127,7 +127,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 @app.route("/dashboard")
 @login_required
@@ -196,6 +196,45 @@ def delete_budget(bid):
     db.session.delete(b)
     db.session.commit()
     return redirect(url_for("budgets_page"))
+
+@app.route("/api/me")
+@login_required
+def api_me():
+    user = current_user()
+    return jsonify({"id": user.id, "name": user.name, "email": user.email})
+
+@app.route("/api/transactions", methods=["GET"])
+@login_required
+def api_transactions_get():
+    uid = session['user_id']
+    txns = Transaction.query.filter_by(user_id=uid).order_by(Transaction.created.desc()).all()
+    return jsonify({"transactions": [
+        {"id": t.id, "description": t.description, "category": t.category, "date": t.date, "amount": t.amount}
+        for t in txns
+    ]})
+
+@app.route("/api/transactions", methods=["POST"])
+@login_required
+def api_transactions_post():
+    data = request.get_json()
+    t = Transaction(
+        user_id=session['user_id'],
+        description=data.get("description", ""),
+        category=data.get("category", "Other"),
+        date=data.get("date", ""),
+        amount=float(data.get("amount", 0))
+    )
+    db.session.add(t)
+    db.session.commit()
+    return jsonify({"id": t.id}), 201
+
+@app.route("/api/transactions/<int:tid>", methods=["DELETE"])
+@login_required
+def api_transactions_delete(tid):
+    t = Transaction.query.filter_by(id=tid, user_id=session['user_id']).first_or_404()
+    db.session.delete(t)
+    db.session.commit()
+    return jsonify({"ok": True})
 
 @app.route("/api/chat", methods=["POST"])
 @login_required

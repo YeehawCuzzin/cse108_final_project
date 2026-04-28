@@ -9,18 +9,27 @@ import {
 export default function Register() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+    setLoading(true)
     try {
       await register(username, password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -45,8 +54,14 @@ export default function Register() {
               onChange={e => setPassword(e.target.value)}
               required
             />
+            <PasswordInput
+              label="Confirm Password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+            />
             {error && <Text c="red" size="sm">{error}</Text>}
-            <Button type="submit" fullWidth mt="xs">Create Account</Button>
+            <Button type="submit" fullWidth mt="xs" loading={loading}>Create Account</Button>
           </Stack>
         </form>
         <Text ta="center" mt="md" size="sm">

@@ -8,6 +8,7 @@ venv/
 
 # SQLite database
 *.db
+instance/
 
 # Frontend dependencies and build
 frontend/node_modules/

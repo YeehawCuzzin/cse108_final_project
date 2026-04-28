@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -18,6 +19,7 @@ export default function Login() {
     e.preventDefault()
     setError('')
     setNotFound(false)
+    setLoading(true)
     try {
       await login(username, password)
       navigate('/dashboard')
@@ -27,6 +29,8 @@ export default function Login() {
       } else {
         setError(err.message)
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -61,7 +65,7 @@ export default function Login() {
               </Text>
             )}
             {error && <Text c="red" size="sm">{error}</Text>}
-            <Button type="submit" fullWidth mt="xs">Log In</Button>
+            <Button type="submit" fullWidth mt="xs" loading={loading}>Log In</Button>
           </Stack>
         </form>
         <Text ta="center" mt="md" size="sm">
