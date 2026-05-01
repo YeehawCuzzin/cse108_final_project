@@ -58,11 +58,58 @@ FlowFundAI goes beyond traditional budgeting tools by acting as a financial assi
 
 ---
 
-## Future Development  
+## Future Development
 
-Planned enhancements include:  
+Planned enhancements include:
 
-- Integration with banking APIs  
-- Advanced analytics and predictive insights  
-- Expanded personalization of AI recommendations  
-- Mobile optimization and cross-platform accessibility  
+- Integration with banking APIs
+- Advanced analytics and predictive insights
+- Expanded personalization of AI recommendations
+- Mobile optimization and cross-platform accessibility
+
+---
+
+## Setup & Running the Project
+
+### 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Get a Gemini API key
+
+The PDF upload and AI context features are powered by Google Gemini 2.5 Flash. You need a free API key to use them.
+
+1. Go to [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. Sign in with a Google account
+3. Click **Create API key**
+4. Copy the key
+
+### 3. Create a `.env` file
+
+In the project root (same folder as `app.py`), create a file named `.env` with the following contents:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+Replace `your_key_here` with the key you copied. Do not add quotes around it.
+
+> **Note:** The `.env` file is intentionally excluded from version control. Never commit it to git.
+
+### 4. Run the app
+
+```bash
+python app.py
+```
+
+Then open [http://localhost:5001](http://localhost:5001) in your browser.
+
+### Test accounts (pre-seeded)
+
+| Email | Password |
+|---|---|
+| roma@test.com | password123 |
+| student@test.com | password123 |
+| user@test.com | password123 |

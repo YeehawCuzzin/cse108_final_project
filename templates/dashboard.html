@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FlowFundAI — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{
@@ -79,11 +80,6 @@
     .stat-card{
       background:var(--card);border:1px solid var(--border);border-radius:14px;
       padding:1.4rem 1.6rem;position:relative;overflow:hidden;
-    }
-    .stat-card::after{
-      content:'';position:absolute;top:-20px;right:-20px;
-      width:80px;height:80px;border-radius:50%;
-      background:radial-gradient(circle,rgba(0,224,122,.08),transparent 70%);
     }
     .stat-card-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
     .stat-card-value{font-family:var(--font-head);font-size:2rem;font-weight:800;margin:.3rem 0;letter-spacing:-.02em;}
@@ -251,6 +247,23 @@
       .main{margin-left:0;}
       .expense-form{grid-template-columns:1fr;}
     }
+
+    /* ─── UPLOAD ZONES ─── */
+    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+    @media(max-width:700px){.upload-grid{grid-template-columns:1fr;}}
+    .upload-section-label{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;}
+    .upload-zone{
+      border:2px dashed var(--border);border-radius:12px;
+      padding:2rem 1rem;text-align:center;cursor:pointer;
+      transition:border-color .2s,background .2s;
+    }
+    .upload-zone:hover,.upload-zone.drag-over{
+      border-color:var(--accent);background:rgba(0,224,122,.04);
+    }
+    .upload-icon{font-size:1.8rem;margin-bottom:.5rem;}
+    .upload-label{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.2rem;}
+    .upload-sub{font-size:.75rem;color:var(--muted);}
+    .upload-status{margin-top:.65rem;font-size:.82rem;min-height:1.1rem;transition:color .2s;}
   </style>
 </head>
 <body>
@@ -298,106 +311,53 @@
       </div>
     </div>
 
-    <!-- STAT CARDS -->
-    <div class="stat-grid">
-      <div class="stat-card danger">
-        <div class="stat-card-label">Total Spent</div>
-        <div class="stat-card-value" id="totalSpent">$0.00</div>
-        <div class="stat-card-meta">All time expenses</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">This Month</div>
-        <div class="stat-card-value" id="monthSpent">$0.00</div>
-        <div class="stat-card-meta" id="monthName">Current month</div>
-      </div>
-      <div class="stat-card accent">
-        <div class="stat-card-label">Transactions</div>
-        <div class="stat-card-value" id="txCount">0</div>
-        <div class="stat-card-meta">Total logged</div>
-      </div>
-      <div class="stat-card warning">
-        <div class="stat-card-label">Top Category</div>
-        <div class="stat-card-value" id="topCat" style="font-size:1.2rem;">—</div>
-        <div class="stat-card-meta">Biggest spend area</div>
-      </div>
-    </div>
+    <!-- ══ DASHBOARD PAGE ══ -->
+    <div id="page-dashboard">
 
-    <!-- MAIN GRID -->
-    <div class="dashboard-grid">
-
-      <!-- LEFT COLUMN -->
-      <div>
-        <!-- ADD EXPENSE -->
-        <div class="panel section-gap">
-          <div class="panel-header">
-            <div class="panel-title">Add Expense</div>
-          </div>
-          <div class="panel-body">
-            <div class="expense-form">
-              <div class="field">
-                <label>Description</label>
-                <input type="text" id="expDesc" placeholder="e.g. Grocery run" />
-              </div>
-              <div class="field">
-                <label>Amount ($)</label>
-                <input type="number" id="expAmount" placeholder="0.00" min="0" step="0.01" />
-              </div>
-              <div class="field">
-                <label>Category</label>
-                <select id="expCat">
-                  <option value="Food">Food</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Housing">Housing</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Health">Health</option>
-                  <option value="Shopping">Shopping</option>
-                  <option value="Education">Education</option>
-                  <option value="Subscriptions">Subscriptions</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Date</label>
-                <input type="date" id="expDate" />
-              </div>
-              <button class="btn-add" onclick="addExpense()">Add</button>
-            </div>
-          </div>
+      <!-- STAT CARDS -->
+      <div class="stat-grid">
+        <div class="stat-card danger">
+          <div class="stat-card-label">Total Spent</div>
+          <div class="stat-card-value" id="totalSpent">$0.00</div>
+          <div class="stat-card-meta">All time expenses</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-card-label">This Month</div>
+          <div class="stat-card-value" id="monthSpent">$0.00</div>
+          <div class="stat-card-meta" id="monthName">Current month</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-card-label">Transactions</div>
+          <div class="stat-card-value" id="txCount">0</div>
+          <div class="stat-card-meta">Total logged</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-card-label">Top Category</div>
+          <div class="stat-card-value" id="topCat" style="font-size:1.2rem;">—</div>
+          <div class="stat-card-meta">Biggest spend area</div>
+        </div>
+      </div>
 
-        <!-- EXPENSE LIST -->
+      <!-- MAIN GRID -->
+      <div class="dashboard-grid">
+
+        <!-- LEFT: SPENDING PIE CHART -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">Recent Expenses</div>
-            <span style="font-size:.78rem;color:var(--muted)" id="expCount">0 items</span>
+            <div class="panel-title">Spending by Category</div>
+            <span id="catTotalLabel" style="font-size:.78rem;color:var(--muted)"></span>
           </div>
           <div class="panel-body">
-            <div class="expense-list" id="expenseList">
-              <div class="empty-state">
-                <div class="empty-icon">—</div>
-                <p>No expenses yet.<br/>Add your first one above!</p>
-              </div>
+            <div id="catEmpty" style="text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.88rem;">
+              No spending data yet.<br/>Add an expense to see your breakdown.
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <div style="display:flex;flex-direction:column;gap:1.5rem;">
-
-        <!-- CATEGORY BREAKDOWN -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">By Category</div>
-          </div>
-          <div class="panel-body">
-            <div class="cat-list" id="catList">
-              <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem;">No data yet</div>
+            <div id="catChartWrap" style="display:none;position:relative;max-height:420px;">
+              <canvas id="categoryChart"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- AI ASSISTANT -->
+        <!-- RIGHT: AI ASSISTANT -->
         <div class="panel" style="display:flex;flex-direction:column;">
           <div class="ai-header">
             <div class="ai-dot"></div>
@@ -409,7 +369,169 @@
         </div>
 
       </div>
-    </div>
+
+      <!-- DOCUMENT UPLOAD -->
+      <div class="panel" style="margin-top:1.5rem;">
+        <div class="panel-header">
+          <div class="panel-title">Upload Documents</div>
+          <span style="font-size:.78rem;color:var(--muted);">Parsed by Gemini 2.5 Flash</span>
+        </div>
+        <div class="panel-body">
+          <div class="upload-grid">
+
+            <!-- Transaction History -->
+            <div>
+              <div class="upload-section-label">Transaction History</div>
+              <div class="upload-zone" id="txZone">
+                <div class="upload-icon">📄</div>
+                <div class="upload-label">Upload bank statement</div>
+                <div class="upload-sub">PDF format · expenses auto-imported</div>
+              </div>
+              <input type="file" id="txFile" accept=".pdf" style="display:none"/>
+              <div class="upload-status" id="txStatus"></div>
+            </div>
+
+            <!-- AI Context -->
+            <div>
+              <div class="upload-section-label">AI Assistant Context</div>
+              <div class="upload-zone" id="ctxZone">
+                <div class="upload-icon">💡</div>
+                <div class="upload-label">Upload financial document</div>
+                <div class="upload-sub">PDF or text · gives the AI context about you</div>
+              </div>
+              <input type="file" id="ctxFile" accept=".pdf,.txt,.csv" style="display:none"/>
+              <div class="upload-status" id="ctxStatus"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #page-dashboard -->
+
+    <!-- ══ SUBSCRIPTIONS PAGE ══ -->
+    <div id="page-subscriptions" style="display:none;">
+
+      <!-- SUBSCRIPTION STATS -->
+      <div class="stat-grid" style="margin-bottom:2rem;">
+        <div class="stat-card warning">
+          <div class="stat-card-label">Monthly Total</div>
+          <div class="stat-card-value" id="subMonthly">$0.00</div>
+          <div class="stat-card-meta" id="subMonthName">Current month</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-card-label">Subscriptions Logged</div>
+          <div class="stat-card-value" id="subCount">0</div>
+          <div class="stat-card-meta">All time entries</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-card-label">All-Time Total</div>
+          <div class="stat-card-value" id="subTotal">$0.00</div>
+          <div class="stat-card-meta">Total subscription spend</div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIPTION LIST -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Subscription Transactions</div>
+          <span style="font-size:.78rem;color:var(--muted)" id="subItemCount">0 items</span>
+        </div>
+        <div class="panel-body">
+          <div class="expense-list" id="subscriptionList">
+            <div class="empty-state">
+              <div class="empty-icon">↺</div>
+              <p>No subscriptions yet.<br/>Add an expense and choose <strong style="color:var(--accent)">Subscriptions</strong> as the category.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #page-subscriptions -->
+
+    <!-- ══ EXPENSES PAGE ══ -->
+    <div id="page-expenses" style="display:none;">
+
+      <!-- STAT CARDS -->
+      <div class="stat-grid">
+        <div class="stat-card danger">
+          <div class="stat-card-label">Total Spent</div>
+          <div class="stat-card-value" id="exp-totalSpent">$0.00</div>
+          <div class="stat-card-meta">All time expenses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">This Month</div>
+          <div class="stat-card-value" id="exp-monthSpent">$0.00</div>
+          <div class="stat-card-meta" id="exp-monthName">Current month</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-card-label">Transactions</div>
+          <div class="stat-card-value" id="exp-txCount">0</div>
+          <div class="stat-card-meta">Total logged</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-card-label">Top Category</div>
+          <div class="stat-card-value" id="exp-topCat" style="font-size:1.2rem;">—</div>
+          <div class="stat-card-meta">Biggest spend area</div>
+        </div>
+      </div>
+
+      <!-- ADD EXPENSE FORM -->
+      <div class="panel section-gap">
+        <div class="panel-header">
+          <div class="panel-title">Add Expense</div>
+        </div>
+        <div class="panel-body">
+          <div class="expense-form">
+            <div class="field">
+              <label>Description</label>
+              <input id="expDesc" type="text" placeholder="e.g. Grocery run"/>
+            </div>
+            <div class="field">
+              <label>Amount ($)</label>
+              <input id="expAmount" type="number" min="0.01" step="0.01" placeholder="0.00"/>
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <select id="expCat">
+                <option>Food</option>
+                <option>Transport</option>
+                <option>Housing</option>
+                <option>Entertainment</option>
+                <option>Health</option>
+                <option>Shopping</option>
+                <option>Education</option>
+                <option>Subscriptions</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input id="expDate" type="date"/>
+            </div>
+            <button class="btn-add" onclick="addExpense()">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT EXPENSES -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Recent Expenses</div>
+          <span style="font-size:.78rem;color:var(--muted)" id="expCount">0 items</span>
+        </div>
+        <div class="panel-body">
+          <div class="expense-list" id="expenseList">
+            <div class="empty-state">
+              <div class="empty-icon">💰</div>
+              <p>No expenses yet.<br/>Add your first one above!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #page-expenses -->
+
   </main>
 </div>
 
@@ -420,6 +542,7 @@
   const catColors = {Food:'#f97316',Transport:'#3b82f6',Housing:'#8b5cf6',Entertainment:'#ec4899',Health:'#10b981',Shopping:'#f59e0b',Education:'#06b6d4',Subscriptions:'#00e07a',Other:'#6b7280'};
 
   let expenses = [];
+  let categoryChart = null;
 
   // BOOT 
   async function boot() {
@@ -435,9 +558,9 @@
       return;
     }
     await loadExpenses();
+    document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('loadingScreen').style.display = 'none';
     document.getElementById('appRoot').style.display = 'flex';
-    document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
   }
 
   // LOAD EXPENSES
@@ -445,9 +568,10 @@
     const res  = await fetch('/api/transactions');
     const data = await res.json();
     expenses   = data.transactions || [];
-    renderExpenses();
     renderStats();
     renderCategories();
+    renderSubscriptions();
+    renderExpenses();
   }
 
   // ADD EXPENSE 
@@ -517,27 +641,122 @@
     document.getElementById('txCount').textContent    = expenses.length;
     document.getElementById('topCat').textContent     = top ? top[0] : '—';
     document.getElementById('monthName').textContent  = now.toLocaleString('default',{month:'long'});
+    document.getElementById('exp-totalSpent').textContent = `$${total.toFixed(2)}`;
+    document.getElementById('exp-monthSpent').textContent = `$${month.toFixed(2)}`;
+    document.getElementById('exp-txCount').textContent    = expenses.length;
+    document.getElementById('exp-topCat').textContent     = top ? top[0] : '—';
+    document.getElementById('exp-monthName').textContent  = now.toLocaleString('default',{month:'long'});
+  }
+
+  function renderSubscriptions() {
+    const subs = expenses.filter(e => e.category === 'Subscriptions');
+    const now  = new Date();
+    const monthSubs  = subs.filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+    const monthTotal = monthSubs.reduce((s, e) => s + parseFloat(e.amount), 0);
+    const allTotal   = subs.reduce((s, e) => s + parseFloat(e.amount), 0);
+
+    document.getElementById('subMonthly').textContent   = `$${monthTotal.toFixed(2)}`;
+    document.getElementById('subCount').textContent     = subs.length;
+    document.getElementById('subTotal').textContent     = `$${allTotal.toFixed(2)}`;
+    document.getElementById('subMonthName').textContent = now.toLocaleString('default', { month: 'long' });
+    document.getElementById('subItemCount').textContent = `${subs.length} item${subs.length !== 1 ? 's' : ''}`;
+
+    const list = document.getElementById('subscriptionList');
+    if (!subs.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">↺</div><p>No subscriptions yet.<br/>Add an expense and choose <strong style="color:var(--accent)">Subscriptions</strong> as the category.</p></div>`;
+      return;
+    }
+    list.innerHTML = subs.map(e => `
+      <div class="expense-item">
+        <div class="exp-icon" style="background:rgba(0,224,122,.1);color:var(--accent);font-size:1.2rem;">↺</div>
+        <div class="exp-info">
+          <div class="exp-name">${e.description}</div>
+          <div class="exp-meta">${e.date}</div>
+        </div>
+        <span class="exp-cat">Subscription</span>
+        <div class="exp-amount">-$${parseFloat(e.amount).toFixed(2)}</div>
+        <button class="exp-delete" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
+      </div>
+    `).join('');
   }
 
   function renderCategories() {
     const cats = {};
     expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + parseFloat(e.amount); });
-    const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-    const max    = sorted[0]?.[1] || 1;
-    const el     = document.getElementById('catList');
+    const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+    const total  = sorted.reduce((s,[,v]) => s+v, 0);
+
+    const empty      = document.getElementById('catEmpty');
+    const wrap       = document.getElementById('catChartWrap');
+    const totalLabel = document.getElementById('catTotalLabel');
+
     if (!sorted.length) {
-      el.innerHTML = `<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem;">No data yet</div>`;
+      empty.style.display = 'block';
+      wrap.style.display  = 'none';
+      if (categoryChart) { categoryChart.destroy(); categoryChart = null; }
       return;
     }
-    el.innerHTML = sorted.map(([cat, amt]) => `
-      <div class="cat-item">
-        <div class="cat-row">
-          <div class="cat-name">${cat}</div>
-          <div class="cat-amount">$${amt.toFixed(2)}</div>
-        </div>
-        <div class="cat-bar-bg"><div class="cat-bar" style="width:${(amt/max*100).toFixed(1)}%;background:${catColors[cat]||'var(--accent)'}"></div></div>
-      </div>
-    `).join('');
+
+    empty.style.display  = 'none';
+    wrap.style.display   = 'block';
+    totalLabel.textContent = `$${total.toFixed(2)} total`;
+
+    const labels = sorted.map(([cat]) => cat);
+    const data   = sorted.map(([,amt]) => parseFloat(amt.toFixed(2)));
+    const colors = sorted.map(([cat]) => catColors[cat] || '#6b7280');
+
+    if (categoryChart) { categoryChart.destroy(); }
+
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    categoryChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors.map(c => c + 'bb'),
+          borderColor: colors,
+          borderWidth: 2,
+          hoverOffset: 10,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#8aab97',
+              font: { family: "'DM Sans', sans-serif", size: 12 },
+              padding: 16,
+              boxWidth: 12,
+              boxHeight: 12,
+              usePointStyle: true,
+              pointStyle: 'circle',
+            }
+          },
+          tooltip: {
+            backgroundColor: '#161e1a',
+            borderColor: '#1f2e28',
+            borderWidth: 1,
+            titleColor: '#e8f2ec',
+            bodyColor: '#8aab97',
+            padding: 10,
+            callbacks: {
+              label: (ctx) => {
+                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                return `  $${ctx.parsed.toFixed(2)}  (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   // LOGOUT
@@ -553,10 +772,100 @@
     setTimeout(() => t.classList.remove('show'), 2500);
   };
 
+  const pages = {
+    dashboard:     { title: 'Dashboard',     sub: "Here's your financial overview" },
+    subscriptions: { title: 'Subscriptions', sub: 'Your recurring monthly expenses' },
+    expenses:      { title: 'Expenses',      sub: 'All your logged transactions' },
+    ai:            { title: 'AI Assistant',  sub: 'Get personalized financial advice' },
+  };
+
   window.setPage = (page) => {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     event.currentTarget.classList.add('active');
+
+    // hide all pages
+    document.getElementById('page-dashboard').style.display     = 'none';
+    document.getElementById('page-subscriptions').style.display = 'none';
+    document.getElementById('page-expenses').style.display      = 'none';
+
+    const meta = pages[page] || pages.dashboard;
+    document.getElementById('pageTitle').textContent = meta.title;
+    document.getElementById('pageSub').textContent   = meta.sub;
+
+    if (page === 'subscriptions') {
+      document.getElementById('page-subscriptions').style.display = 'block';
+      renderSubscriptions();
+    } else if (page === 'expenses') {
+      document.getElementById('page-expenses').style.display = 'block';
+      renderExpenses();
+    } else {
+      document.getElementById('page-dashboard').style.display = 'block';
+    }
   };
+
+  // ─── DOCUMENT UPLOADS ─────────────────────────────────────────────────────
+
+  function setUploadStatus(id, msg, color = 'var(--muted)') {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.color = color;
+  }
+
+  function setupUploadZone(zoneId, inputId, handler) {
+    const zone  = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    zone.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      if (input.files[0]) { handler(input.files[0]); input.value = ''; }
+    });
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', ()  => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handler(e.dataTransfer.files[0]);
+    });
+  }
+
+  async function handleTxUpload(file) {
+    setUploadStatus('txStatus', '⏳ Parsing PDF with Gemini 2.5 Flash…');
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res  = await fetch('/api/upload/transactions', { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok) {
+        const n = data.imported;
+        setUploadStatus('txStatus', `✓ Imported ${n} transaction${n !== 1 ? 's' : ''}`, 'var(--accent)');
+        showToast(`✓ ${n} transaction${n !== 1 ? 's' : ''} imported!`);
+        await loadExpenses();
+      } else {
+        setUploadStatus('txStatus', `⚠ ${data.error}`, 'var(--danger)');
+      }
+    } catch {
+      setUploadStatus('txStatus', '⚠ Upload failed — try again', 'var(--danger)');
+    }
+  }
+
+  async function handleCtxUpload(file) {
+    setUploadStatus('ctxStatus', '⏳ Processing document…');
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res  = await fetch('/api/upload/context', { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok) {
+        setUploadStatus('ctxStatus', '✓ Context saved for AI Assistant', 'var(--accent)');
+        showToast('✓ AI context updated!');
+      } else {
+        setUploadStatus('ctxStatus', `⚠ ${data.error}`, 'var(--danger)');
+      }
+    } catch {
+      setUploadStatus('ctxStatus', '⚠ Upload failed — try again', 'var(--danger)');
+    }
+  }
+
+  setupUploadZone('txZone', 'txFile', handleTxUpload);
+  setupUploadZone('ctxZone', 'ctxFile', handleCtxUpload);
 
   boot();
 </script>
