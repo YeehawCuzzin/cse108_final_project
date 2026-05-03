@@ -284,6 +284,107 @@ Expected result:
 
 
 
+## 8. User Data Separation Test
+
+This test confirms that one user cannot view or delete another user's transactions.
+
+### User A: Register/Login
+
+    $bodyA = @{
+      username = "user_a_test"
+      password = "password123"
+    } | ConvertTo-Json
+
+    try {
+      $responseA = Invoke-RestMethod `
+        -Uri "http://127.0.0.1:5001/api/auth/register" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $bodyA
+    } catch {
+      $responseA = Invoke-RestMethod `
+        -Uri "http://127.0.0.1:5001/api/auth/login" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $bodyA
+    }
+
+    $tokenA = $responseA.token
+    $headersA = @{ Authorization = "Bearer $tokenA" }
+
+### User A: Create a Private Transaction
+
+    $transactionA = @{
+      description = "User A private transaction"
+      category = "Food"
+      amount = 25.50
+      date = "2026-05-03"
+    } | ConvertTo-Json
+
+    $createdA = Invoke-RestMethod `
+      -Uri "http://127.0.0.1:5001/api/transactions" `
+      -Method POST `
+      -Headers $headersA `
+      -ContentType "application/json" `
+      -Body $transactionA
+
+    $transactionIdA = $createdA.transaction.id
+    $transactionIdA
+
+### User B: Register/Login
+
+    $bodyB = @{
+      username = "user_b_test"
+      password = "password123"
+    } | ConvertTo-Json
+
+    try {
+      $responseB = Invoke-RestMethod `
+        -Uri "http://127.0.0.1:5001/api/auth/register" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $bodyB
+    } catch {
+      $responseB = Invoke-RestMethod `
+        -Uri "http://127.0.0.1:5001/api/auth/login" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $bodyB
+    }
+
+    $tokenB = $responseB.token
+    $headersB = @{ Authorization = "Bearer $tokenB" }
+
+### User B: Fetch Transactions
+
+    Invoke-RestMethod `
+      -Uri "http://127.0.0.1:5001/api/transactions" `
+      -Method GET `
+      -Headers $headersB
+
+Expected result:
+
+    transactions
+    ------------
+    {}
+
+User B should not see User A's transaction.
+
+### User B: Try to Delete User A's Transaction
+
+    Invoke-RestMethod `
+      -Uri "http://127.0.0.1:5001/api/transactions/$transactionIdA" `
+      -Method DELETE `
+      -Headers $headersB
+
+Expected result:
+
+    {"error":"Transaction not found"}
+
+This confirms that deletion checks both the transaction ID and the logged-in user's ID.
+
+
+
 \## Notes
 
 
