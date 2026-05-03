@@ -1,146 +1,233 @@
-\# FlowFundAI Test Plan
+# FlowFundAI Test Plan
 
+This test plan tracks what has already been verified, what is partially complete, and what still needs to be tested before the final demo.
 
+---
 
-\## Auth Tests
+## Verified
 
-\- Register a new user.
+### Auth Tests
 
-\- Confirm successful registration redirects to `/dashboard`.
+- Register a new user.
+- Confirm successful registration redirects to `/dashboard`.
+- Log out.
+- Log in with the same account.
+- Confirm login redirects to `/dashboard`.
+- While logged out, manually visit `/dashboard`.
+- Confirm the app redirects to `/login`.
+- While logged out, manually visit `/settings`.
+- Confirm the app redirects to `/login`.
 
-\- Log out.
+Status: Verified locally.
 
-\- Log in with the same account.
+---
 
-\- Confirm login redirects to `/dashboard`.
+### Settings / Privacy Tests
 
-\- While logged out, manually visit `/dashboard`.
+- Log in and visit `/settings`.
+- Confirm username, user ID, and account creation time display.
+- Confirm Back to Dashboard works.
+- Confirm Logout from Settings works.
+- Confirm the Privacy section is visible.
+- Confirm the Documents section is visible.
 
-\- Confirm the app redirects to `/login`.
+Status: Verified locally.
 
-\- While logged out, manually visit `/settings`.
+---
 
-\- Confirm the app redirects to `/login`.
+### Backend Health Route Test
 
+- Start the backend.
+- Visit `/api/health`.
+- Confirm the backend returns a working status message.
 
+Expected result:
 
-\## Settings / Privacy Tests
+    {
+      "message": "FlowFundAI backend is running",
+      "status": "ok"
+    }
 
-\- Log in and visit `/settings`.
+Status: Verified locally.
 
-\- Confirm username, user ID, and account creation time display.
+---
 
-\- Confirm Back to Dashboard works.
+### Transaction API CRUD Tests
 
-\- Confirm Logout from Settings works.
+- Create a transaction with a valid description, category, amount, and date.
+- Fetch transactions for the logged-in user.
+- Confirm the created transaction appears.
+- Delete the transaction.
+- Fetch transactions again.
+- Confirm the deleted transaction no longer appears.
 
-\- Confirm the Privacy section is visible.
+Status: Verified locally at the backend API level.
 
-\- Confirm the Documents section is visible.
+---
 
+### User Data Separation Tests
 
+- Log in as User A.
+- Add a transaction as User A.
+- Log out or switch tokens.
+- Log in as User B.
+- Fetch User B's transactions.
+- Confirm User A's transaction does not appear.
+- Try deleting User A's transaction while authenticated as User B.
+- Confirm the request is blocked or returns not found.
 
-\## Transaction Persistence Tests
+Expected blocked delete result:
 
-\- Log in as User A.
+    {"error":"Transaction not found"}
 
-\- Add a transaction.
+Status: Verified locally at the backend API level.
 
-\- Refresh the page.
+---
 
-\- Confirm the transaction still appears.
+## Partially Complete
 
-\- Log out.
+### Transaction Persistence Tests
 
-\- Log back in as User A.
+- Log in as User A.
+- Add a transaction.
+- Refresh or re-fetch transactions.
+- Confirm the transaction still appears.
+- Log out.
+- Log back in as User A.
+- Confirm the transaction still appears.
 
-\- Confirm the transaction still appears.
+Status: Partially complete.
 
+Notes:
+- Transaction persistence exists at the backend API/database level.
+- Transactions can be created, fetched, and deleted through protected API routes.
+- Full browser-level persistence testing is still pending because the React frontend does not yet have a transaction UI connected to the API.
 
+---
 
-\## User Data Separation Tests
+### Transaction CRUD UI Tests
 
-\- Log in as User A.
+- Add a transaction from the frontend.
+- Confirm it appears in the frontend transaction list.
+- Delete the transaction from the frontend.
+- Confirm it disappears from the frontend transaction list.
+- Confirm dashboard totals update after add/delete.
+- Confirm category breakdown updates after add/delete.
 
-\- Add a transaction.
+Status: Partially complete.
 
-\- Log out.
+Notes:
+- Backend transaction CRUD is working.
+- Frontend transaction UI is still pending or not yet connected on `main`.
 
-\- Log in as User B.
+---
 
-\- Confirm User A's transaction does not appear.
+## Pending
 
-\- Try deleting or fetching a transaction created by another user.
+### Budget CRUD Tests
 
-\- Confirm the request is blocked or returns not found.
+- Add a budget/category.
+- View budget progress.
+- Delete a budget.
+- Confirm category totals update.
+- Confirm users only see their own budgets.
 
+Status: Pending.
 
+Notes:
+- Budget model/routes/UI still need to be implemented or pushed to `main`.
 
-\## Transaction CRUD Tests
+---
 
-\- Add a transaction with a valid description, category, amount, and date.
+### Dashboard Totals / Category Breakdown Tests
 
-\- Confirm it appears in the transaction list.
+- Confirm total spending updates after adding a transaction.
+- Confirm total spending updates after deleting a transaction.
+- Confirm number of transactions updates correctly.
+- Confirm category breakdown updates correctly.
+- Confirm pie chart or category summary matches transaction data.
+- Confirm percentages display correctly.
 
-\- Delete the transaction.
+Status: Pending.
 
-\- Confirm it disappears from the list.
+Notes:
+- Backend transaction data exists.
+- React dashboard still needs transaction summary/category breakdown integration.
 
-\- Confirm dashboard totals update after add/delete.
+---
 
-\- Confirm category breakdown updates after add/delete.
+### Edge Case Tests
 
+- Try adding a transaction with an empty description.
+- Try adding a transaction with amount `0`.
+- Try adding a transaction with a negative amount.
+- Try adding a non-numeric amount.
+- Try adding a very large amount.
+- Try adding duplicate transactions.
+- Try deleting the same transaction twice.
+- Try accessing transaction routes without a JWT token.
+- Try accessing transaction routes with an invalid JWT token.
 
+Status: Pending.
 
-\## Edge Case Tests
+Notes:
+- Some validation exists in the backend transaction route.
+- These cases still need full documented testing.
 
-\- Try adding a transaction with an empty description.
+---
 
-\- Try adding a transaction with amount `0`.
+### Document Upload / Privacy Tests
 
-\- Try adding a transaction with a negative amount.
+- Upload a demo bank statement.
+- Confirm extracted transactions belong only to the current user.
+- Log out and log in as another user.
+- Confirm uploaded/extracted data from the first user is not visible.
+- Confirm uploaded files are not committed to GitHub.
+- Confirm API keys are stored in `.env` and not committed.
+- Confirm real financial documents are not used for demo data.
 
-\- Try adding a very large amount.
+Status: Pending.
 
-\- Try adding duplicate transactions.
+Notes:
+- Document upload and Gemini parsing features are planned or in progress.
+- Privacy testing should happen after upload routes are available on `main`.
 
-\- Try deleting the same transaction twice.
+---
 
+### AI Assistant Tests
 
+- Ask the AI assistant for spending advice.
+- Confirm it uses the current user's financial data only.
+- Confirm it does not expose another user's transactions.
+- Confirm it gives useful budgeting recommendations.
+- Confirm the UI labels the assistant honestly if it is rule-based or prototype-level.
 
-\## Document Upload / Privacy Tests
+Status: Pending.
 
-\- Upload a demo bank statement.
+Notes:
+- AI assistant integration is still pending or not yet available on `main`.
 
-\- Confirm extracted transactions belong only to the current user.
+---
 
-\- Log out and log in as another user.
+### Demo Readiness Tests
 
-\- Confirm uploaded/extracted data from the first user is not visible.
+- Start backend.
+- Start frontend.
+- Register or log in.
+- Show dashboard.
+- Show settings/privacy page.
+- Add transaction.
+- Show totals/category update.
+- Delete transaction.
+- Log out.
+- Log back in.
+- Confirm data persisted.
+- Demonstrate user-data separation.
+- Demonstrate document/upload privacy if upload feature is ready.
+- Demonstrate AI assistant or rule-based insight box if ready.
 
-\- Confirm uploaded files and API keys are not committed to GitHub.
+Status: Pending.
 
-
-
-\## Demo Readiness Tests
-
-\- Start backend.
-
-\- Start frontend.
-
-\- Register or log in.
-
-\- Show dashboard.
-
-\- Show settings/privacy page.
-
-\- Add transaction.
-
-\- Show totals/category update.
-
-\- Delete transaction.
-
-\- Log out and log back in.
-
-\- Confirm data persisted.
-
+Notes:
+- Auth, settings, backend health, transaction API, and user-data separation are verified.
+- Full demo flow still depends on frontend transaction UI, dashboard summaries, budgets, document upload, and AI assistant features.
