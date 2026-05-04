@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from models import db
 from routes.auth import auth_bp
+from routes.transactions import transactions_bp
 import os
 from dotenv import load_dotenv
 
@@ -20,6 +21,11 @@ def create_app():
     JWTManager(app)
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(transactions_bp, url_prefix='/api/transactions')
+
+    @app.route('/api/health', methods=['GET'])
+    def health():
+        return {'status': 'ok', 'message': 'FlowFundAI backend is running'}, 200
 
     with app.app_context():
         db.create_all()

@@ -58,58 +58,142 @@ FlowFundAI goes beyond traditional budgeting tools by acting as a financial assi
 
 ---
 
-## Future Development
+## Current Tech Stack
 
-Planned enhancements include:
+FlowFundAI currently uses a React/Vite frontend with a Flask API backend.
 
-- Integration with banking APIs
-- Advanced analytics and predictive insights
-- Expanded personalization of AI recommendations
-- Mobile optimization and cross-platform accessibility
+- React
+- Vite
+- Mantine UI
+- Flask
+- Flask-SQLAlchemy
+- SQLite
+- Flask-JWT-Extended
+- bcrypt password hashing
+- python-dotenv
 
 ---
 
 ## Setup & Running the Project
 
-### 1. Install dependencies
+### 1. Backend Setup
 
-```bash
-pip install -r requirements.txt
-```
+From the project root:
 
-### 2. Get a Gemini API key
+    cd C:\Users\Krish\source\repos\cse108_final_project
+    py -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    pip install -r backend\requirements.txt
 
-The PDF upload and AI context features are powered by Google Gemini 2.5 Flash. You need a free API key to use them.
+Start the backend API:
 
-1. Go to [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-2. Sign in with a Google account
-3. Click **Create API key**
-4. Copy the key
+    cd backend
+    $env:FLASK_APP="app:create_app"
+    flask run --port 5001
 
-### 3. Create a `.env` file
+The backend API runs at:
 
-In the project root (same folder as `app.py`), create a file named `.env` with the following contents:
+    http://127.0.0.1:5001
 
-```
-GEMINI_API_KEY=your_key_here
-```
+Note: opening the backend root URL directly may show `404 Not Found`. This is expected because the backend mainly serves API routes.
 
-Replace `your_key_here` with the key you copied. Do not add quotes around it.
+---
 
-> **Note:** The `.env` file is intentionally excluded from version control. Never commit it to git.
+### 2. Frontend Setup
 
-### 4. Run the app
+Open a second PowerShell terminal.
 
-```bash
-python app.py
-```
+From the project root:
 
-Then open [http://localhost:5001](http://localhost:5001) in your browser.
+    cd C:\Users\Krish\source\repos\cse108_final_project\frontend
+    npm install
+    npm run dev
 
-### Test accounts (pre-seeded)
+The frontend runs at:
 
-| Email | Password |
+    http://localhost:5173
+
+Use this URL in the browser.
+
+---
+
+## Useful Local URLs
+
+| Page | URL |
 |---|---|
-| roma@test.com | password123 |
-| student@test.com | password123 |
-| user@test.com | password123 |
+| Frontend | `http://localhost:5173` |
+| Register | `http://localhost:5173/register` |
+| Login | `http://localhost:5173/login` |
+| Dashboard | `http://localhost:5173/dashboard` |
+| Settings | `http://localhost:5173/settings` |
+| Backend API | `http://127.0.0.1:5001` |
+
+---
+
+## Current Verified Features
+
+- User registration
+- User login
+- User logout
+- JWT-based authentication
+- Protected dashboard route
+- Protected settings route
+- Account/settings/privacy page
+
+---
+
+## Authentication Notes
+
+The current app uses username/password authentication. Passwords are hashed with bcrypt on the backend. After login or registration, the backend returns a JWT token, which the frontend stores locally and uses for protected API requests.
+
+---
+
+## Gemini API / AI Features
+
+The PDF upload, document parsing, and AI assistant features are planned to use Google Gemini 2.5 Flash.
+
+To use Gemini-powered features, create a `.env` file for the backend and add your API key:
+
+    GEMINI_API_KEY=your_key_here
+
+Do not add quotes around the key.
+
+> Note: The `.env` file is intentionally excluded from version control. Never commit it to git.
+
+---
+
+## Test Accounts
+
+There are currently no required pre-seeded test accounts for the React/JWT version. Create a test account from:
+
+    http://localhost:5173/register
+
+Example local test account:
+
+    Username: krish_test
+    Password: password123
+
+Do not use real financial information in demo accounts.
+
+---
+
+## Development Notes
+
+- Do not commit `.env` files.
+- Do not commit real uploaded financial documents.
+- Use demo or synthetic bank statements only.
+- Backend routes that handle user data should require authentication.
+- User-specific database queries should filter by the logged-in user ID.
+
+---
+
+## Future Development
+
+Planned enhancements include:
+
+- Integration with banking APIs
+- QuickBooks integration
+- Advanced analytics and predictive insights
+- Expanded personalization of AI recommendations
+- Full AI assistant integration
+- Mobile optimization and cross-platform accessibility
