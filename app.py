@@ -12,6 +12,7 @@ import json
 import re
 from google import genai as google_genai
 from google.genai import types as genai_types
+import anthropic
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flowfund.db"
@@ -278,31 +279,107 @@ def api_transactions_delete(tid):
 @app.route("/api/chat", methods=["POST"])
 @login_required
 def chat():
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return jsonify({"error": "ANTHROPIC_API_KEY environment variable is not set"}), 500
+
     data    = request.get_json()
-    message = (data.get("message") or "").lower()
-    uid     = session['user_id']
-    transactions = Transaction.query.filter_by(user_id=uid).all()
-    total        = sum(t.amount for t in transactions)
-    cat_totals   = {}
-    for t in transactions:
-        cat_totals[t.category] = cat_totals.get(t.category, 0) + t.amount
-    top_cat = max(cat_totals, key=cat_totals.get) if cat_totals else None
-    if "total" in message or "spent" in message:
-        reply = f"You've spent ${total:,.2f} across {len(transactions)} transactions."
-    elif "top" in message or "biggest" in message:
-        reply = f"Your biggest category is {top_cat} at ${cat_totals[top_cat]:,.2f}." if top_cat else "No transactions yet!"
-    elif "save" in message or "budget" in message:
-        reply = "Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings."
-    elif "categor" in message:
-        breakdown = ", ".join(f"{k}: ${v:,.2f}" for k, v in sorted(cat_totals.items(), key=lambda x: -x[1])) if cat_totals else "none yet"
-        reply = f"Spending by category — {breakdown}."
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "No message provided"}), 400
+
+    uid = session['user_id']
+
+    # Build financial profile from transactions
+    transactions = Transaction.query.filter_by(user_id=uid).order_by(Transaction.date.desc()).all()
+    if transactions:
+        total = sum(t.amount for t in transactions)
+        cat_totals = {}
+        for t in transactions:
+            cat_totals[t.category] = cat_totals.get(t.category, 0) + t.amount
+        cat_breakdown = "\n".join(
+            f"  - {cat}: ${amt:,.2f}" for cat, amt in sorted(cat_totals.items(), key=lambda x: -x[1])
+        )
+        tx_lines = "\n".join(
+            f"  - {t.date} | {t.description} | {t.category} | ${t.amount:,.2f}"
+            for t in transactions
+        )
+        financial_profile = (
+            f"Total spent (all time): ${total:,.2f}\n"
+            f"Number of transactions: {len(transactions)}\n\n"
+            f"Spending by category:\n{cat_breakdown}\n\n"
+            f"Full transaction list (newest first):\n{tx_lines}"
+        )
     else:
-        reply = random.choice([
-            "Set a monthly budget for each category to stay on track.",
-            "A $5 daily coffee is $1,825/year — small habits matter!",
-            "Review your subscriptions monthly and cut unused ones.",
-            "Aim for an emergency fund of 3–6 months of expenses.",
-        ])
+        financial_profile = "No transactions logged yet."
+
+    # Pull any uploaded document context
+    ctx_row   = UserContext.query.filter_by(user_id=uid).first()
+    rag_chunks = ctx_row.context if ctx_row and ctx_row.context else "No documents uploaded yet."
+
+    current_date = datetime.utcnow().strftime('%B %d, %Y')
+
+    system_prompt = f"""You are Pluto, a friendly and knowledgeable financial assistant for college students.
+You work inside a personal finance app where students upload their financial documents
+(bank statements, loan documents, federal aid letters, subscriptions, etc.).
+
+You are NOT a licensed financial advisor. For major financial decisions, always recommend
+the user consult their university's financial aid office or a certified financial advisor.
+
+---
+
+## USER FINANCIAL PROFILE
+{financial_profile}
+
+## RETRIEVED DOCUMENT CONTEXT
+{rag_chunks}
+
+## TODAY'S DATE
+{current_date}
+
+---
+
+## YOUR JOB
+Answer the user's questions about their personal finances using ONLY the data provided
+above. Be specific, always reference actual numbers from their data rather than giving
+generic advice. If the answer isn't in the provided context, say so honestly.
+
+## PRIORITIES
+- Flag anything time-sensitive first (loan payments due soon, low balance warnings)
+- Be specific and cite numbers: "you spent $143 on food delivery in March" not "you spend a lot on food"
+- Give one clear, actionable takeaway per response
+- Keep responses concise; students skim. Use bullet points for breakdowns.
+
+## TONE
+- Non-judgmental and encouraging, never shame spending choices
+- Peer-like, not authoritative, you're a knowledgeable friend, not a banker
+- If you detect signs of financial hardship (overdrafts, missed payments),
+  be empathetic and mention campus resources like the financial aid office
+
+## DO NOT
+- Make up numbers or fill gaps with assumptions. say "I don't have that data"
+- Give investment advice
+- Answer questions unrelated to the user's personal finances
+- Repeat the entire financial profile back unprompted
+
+---
+
+## RESPONSE FORMAT
+1. Lead with the direct answer or key insight
+2. Support it with specific numbers from their data
+3. End with one actionable suggestion
+
+For breakdowns, use bullet points with dollar amounts.
+For warnings, bold the key figure."""
+
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model="claude-sonnet-4-5",
+        max_tokens=1024,
+        system=system_prompt,
+        messages=[{"role": "user", "content": message}],
+    )
+    reply = response.content[0].text
     return jsonify({"reply": reply})
 
 @app.route("/api/upload/transactions", methods=["POST"])
@@ -322,7 +399,7 @@ def upload_transactions():
     prompt = (
         "You are a financial data extractor. Parse this bank statement or financial document "
         "and extract ALL expense/debit transactions (skip income or credit entries).\n\n"
-        "Return ONLY a valid JSON array — no markdown, no explanation. Each object must have:\n"
+        "Return ONLY a valid JSON array; no markdown, no explanation. Each object must have:\n"
         '  "description": string (merchant or description)\n'
         '  "amount": number (positive value)\n'
         '  "category": one of: Food, Transport, Housing, Entertainment, Health, Shopping, Education, Subscriptions, Other\n'
@@ -399,12 +476,14 @@ def upload_context():
         )
         extracted = response.text.strip()
         uid = session['user_id']
+        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+        entry = f"[Document uploaded {timestamp} — {file.filename}]\n{extracted}"
         ctx = UserContext.query.filter_by(user_id=uid).first()
         if ctx:
-            ctx.context = extracted
+            ctx.context = ctx.context + "\n\n---\n\n" + entry
             ctx.updated = datetime.utcnow()
         else:
-            ctx = UserContext(user_id=uid, context=extracted)
+            ctx = UserContext(user_id=uid, context=entry)
             db.session.add(ctx)
         db.session.commit()
         return jsonify({"ok": True, "preview": extracted[:300]})
