@@ -6,6 +6,7 @@
   <title>FlowFundAI — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{
@@ -211,6 +212,16 @@
     }
     .ai-send:hover{background:#00ff8a;}
     .ai-send:disabled{opacity:.4;cursor:not-allowed;}
+    /* Markdown rendering inside Pluto's messages */
+    .msg.ai p{margin:.3rem 0;}
+    .msg.ai p:first-child{margin-top:0;}
+    .msg.ai p:last-child{margin-bottom:0;}
+    .msg.ai ul,.msg.ai ol{padding-left:1.2rem;margin:.3rem 0;}
+    .msg.ai li{margin:.15rem 0;}
+    .msg.ai strong{color:var(--accent);}
+    .msg.ai h1,.msg.ai h2,.msg.ai h3{font-family:var(--font-head);margin:.5rem 0 .2rem;font-size:1rem;}
+    .msg.ai code{background:rgba(0,224,122,.1);padding:.1rem .3rem;border-radius:4px;font-size:.82rem;}
+    .msg.ai hr{border:none;border-top:1px solid var(--border);margin:.5rem 0;}
 
     /* ─── QUICK CHIPS ─── */
     .quick-chips{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 1rem;border-top:1px solid var(--border);}
@@ -289,7 +300,7 @@
         <span class="icon">↺</span> Subscriptions
       </div>
       <div class="nav-item" onclick="setPage('ai')">
-        <span class="icon">✦</span> AI Assistant
+        <span class="icon">✦</span> Pluto AI
       </div>
     </nav>
     <div class="sidebar-user">
@@ -357,14 +368,18 @@
           </div>
         </div>
 
-        <!-- RIGHT: AI ASSISTANT -->
-        <div class="panel" style="display:flex;flex-direction:column;">
+        <!-- RIGHT: PLUTO AI (mini preview) -->
+        <div class="panel ai-panel" style="display:flex;flex-direction:column;">
           <div class="ai-header">
             <div class="ai-dot"></div>
-            <div class="ai-title">AI Financial Assistant</div>
+            <div class="ai-title">Pluto — AI-Powered Financial Assistant</div>
           </div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--muted);font-size:.9rem;text-align:center;">
-            AI Assistant coming soon.
+          <div class="ai-messages" id="dash-ai-messages">
+            <div class="msg ai">Hi! I'm Pluto, your AI-powered financial assistant. Ask me anything about your spending, loans, or financial aid!</div>
+          </div>
+          <div class="ai-input-row">
+            <input class="ai-input" id="dash-ai-input" type="text" placeholder="Ask about your spending…" />
+            <button class="ai-send" id="dash-ai-send" onclick="dashSendChat()">➤</button>
           </div>
         </div>
 
@@ -393,11 +408,11 @@
 
             <!-- AI Context -->
             <div>
-              <div class="upload-section-label">AI Assistant Context</div>
+              <div class="upload-section-label">Pluto's Context</div>
               <div class="upload-zone" id="ctxZone">
                 <div class="upload-icon">💡</div>
                 <div class="upload-label">Upload financial document</div>
-                <div class="upload-sub">PDF or text · gives the AI context about you</div>
+                <div class="upload-sub">PDF or text · loan docs, federal aid, etc.</div>
               </div>
               <input type="file" id="ctxFile" accept=".pdf,.txt,.csv" style="display:none"/>
               <div class="upload-status" id="ctxStatus"></div>
@@ -414,15 +429,15 @@
 
       <!-- SUBSCRIPTION STATS -->
       <div class="stat-grid" style="margin-bottom:2rem;">
-        <div class="stat-card warning">
-          <div class="stat-card-label">Monthly Total</div>
-          <div class="stat-card-value" id="subMonthly">$0.00</div>
-          <div class="stat-card-meta" id="subMonthName">Current month</div>
-        </div>
         <div class="stat-card accent">
-          <div class="stat-card-label">Subscriptions Logged</div>
-          <div class="stat-card-value" id="subCount">0</div>
-          <div class="stat-card-meta">All time entries</div>
+          <div class="stat-card-label">Active (Last 30 Days)</div>
+          <div class="stat-card-value" id="subActiveCount">0</div>
+          <div class="stat-card-meta" id="subActiveLabel">subscriptions</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-card-label">Active Monthly Cost</div>
+          <div class="stat-card-value" id="subMonthly">$0.00</div>
+          <div class="stat-card-meta">Billed in the last 30 days</div>
         </div>
         <div class="stat-card danger">
           <div class="stat-card-label">All-Time Total</div>
@@ -431,10 +446,26 @@
         </div>
       </div>
 
-      <!-- SUBSCRIPTION LIST -->
+      <!-- CURRENT SUBSCRIPTIONS -->
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <div class="panel-header">
+          <div class="panel-title">Current Subscriptions</div>
+          <span style="font-size:.78rem;color:var(--accent)" id="subActiveItemCount">billed in last 30 days</span>
+        </div>
+        <div class="panel-body">
+          <div class="expense-list" id="currentSubList">
+            <div class="empty-state">
+              <div class="empty-icon">↺</div>
+              <p>No subscriptions billed in the last 30 days.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIPTION HISTORY -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">Subscription Transactions</div>
+          <div class="panel-title">Subscription History</div>
           <span style="font-size:.78rem;color:var(--muted)" id="subItemCount">0 items</span>
         </div>
         <div class="panel-body">
@@ -531,6 +562,24 @@
       </div>
 
     </div><!-- end #page-expenses -->
+
+    <!-- ══ AI ASSISTANT PAGE ══ -->
+    <div id="page-ai" style="display:none;">
+      <div class="panel ai-panel" style="display:flex;flex-direction:column;height:calc(100vh - 160px);">
+        <div class="ai-header">
+          <div class="ai-dot"></div>
+          <div class="ai-title">Pluto </div>
+          <span style="font-size:.75rem;color:var(--muted);margin-left:auto;">Powered by Claude</span>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+          <div class="msg ai">Hi! I'm Pluto, your AI-powered financial assistant. I have access to all your expenses and any documents you've uploaded — ask me anything about your finances!</div>
+        </div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="ai-input" type="text" placeholder="Ask about your spending, budgets, or financial documents…" />
+          <button class="ai-send" id="ai-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div><!-- end #page-ai -->
 
   </main>
 </div>
@@ -651,36 +700,49 @@
   function renderSubscriptions() {
     const subs = expenses.filter(e => e.category === 'Subscriptions');
     const now  = new Date();
-    const monthSubs  = subs.filter(e => {
-      const d = new Date(e.date);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-    });
-    const monthTotal = monthSubs.reduce((s, e) => s + parseFloat(e.amount), 0);
-    const allTotal   = subs.reduce((s, e) => s + parseFloat(e.amount), 0);
+    const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 30);
 
-    document.getElementById('subMonthly').textContent   = `$${monthTotal.toFixed(2)}`;
-    document.getElementById('subCount').textContent     = subs.length;
-    document.getElementById('subTotal').textContent     = `$${allTotal.toFixed(2)}`;
-    document.getElementById('subMonthName').textContent = now.toLocaleString('default', { month: 'long' });
-    document.getElementById('subItemCount').textContent = `${subs.length} item${subs.length !== 1 ? 's' : ''}`;
+    // Active = billed within the last 30 days
+    const activeSubs = subs.filter(e => new Date(e.date + 'T00:00:00') >= cutoff);
+    const activeTotal = activeSubs.reduce((s, e) => s + parseFloat(e.amount), 0);
+    const allTotal    = subs.reduce((s, e) => s + parseFloat(e.amount), 0);
 
-    const list = document.getElementById('subscriptionList');
-    if (!subs.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">↺</div><p>No subscriptions yet.<br/>Add an expense and choose <strong style="color:var(--accent)">Subscriptions</strong> as the category.</p></div>`;
-      return;
+    document.getElementById('subActiveCount').textContent    = activeSubs.length;
+    document.getElementById('subActiveLabel').textContent    = `subscription${activeSubs.length !== 1 ? 's' : ''}`;
+    document.getElementById('subMonthly').textContent        = `$${activeTotal.toFixed(2)}`;
+    document.getElementById('subTotal').textContent          = `$${allTotal.toFixed(2)}`;
+    document.getElementById('subActiveItemCount').textContent = `${activeSubs.length} billed in last 30 days`;
+    document.getElementById('subItemCount').textContent       = `${subs.length} item${subs.length !== 1 ? 's' : ''}`;
+
+    function subRow(e) {
+      return `
+        <div class="expense-item">
+          <div class="exp-icon" style="background:rgba(0,224,122,.1);color:var(--accent);font-size:1.2rem;">↺</div>
+          <div class="exp-info">
+            <div class="exp-name">${e.description}</div>
+            <div class="exp-meta">${e.date}</div>
+          </div>
+          <span class="exp-cat">Subscription</span>
+          <div class="exp-amount">-$${parseFloat(e.amount).toFixed(2)}</div>
+          <button class="exp-delete" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
+        </div>`;
     }
-    list.innerHTML = subs.map(e => `
-      <div class="expense-item">
-        <div class="exp-icon" style="background:rgba(0,224,122,.1);color:var(--accent);font-size:1.2rem;">↺</div>
-        <div class="exp-info">
-          <div class="exp-name">${e.description}</div>
-          <div class="exp-meta">${e.date}</div>
-        </div>
-        <span class="exp-cat">Subscription</span>
-        <div class="exp-amount">-$${parseFloat(e.amount).toFixed(2)}</div>
-        <button class="exp-delete" onclick="deleteExpense(${e.id})" title="Delete">✕</button>
-      </div>
-    `).join('');
+
+    // Current subscriptions panel
+    const currentList = document.getElementById('currentSubList');
+    if (!activeSubs.length) {
+      currentList.innerHTML = `<div class="empty-state"><div class="empty-icon">↺</div><p>No subscriptions billed in the last 30 days.</p></div>`;
+    } else {
+      currentList.innerHTML = activeSubs.map(subRow).join('');
+    }
+
+    // Full history panel
+    const historyList = document.getElementById('subscriptionList');
+    if (!subs.length) {
+      historyList.innerHTML = `<div class="empty-state"><div class="empty-icon">↺</div><p>No subscriptions yet.<br/>Add an expense and choose <strong style="color:var(--accent)">Subscriptions</strong> as the category.</p></div>`;
+    } else {
+      historyList.innerHTML = subs.map(subRow).join('');
+    }
   }
 
   function renderCategories() {
@@ -776,7 +838,7 @@
     dashboard:     { title: 'Dashboard',     sub: "Here's your financial overview" },
     subscriptions: { title: 'Subscriptions', sub: 'Your recurring monthly expenses' },
     expenses:      { title: 'Expenses',      sub: 'All your logged transactions' },
-    ai:            { title: 'AI Assistant',  sub: 'Get personalized financial advice' },
+    ai:            { title: 'Pluto: AI Assistant',  sub: 'Your AI-powered financial assistant' },
   };
 
   window.setPage = (page) => {
@@ -787,6 +849,7 @@
     document.getElementById('page-dashboard').style.display     = 'none';
     document.getElementById('page-subscriptions').style.display = 'none';
     document.getElementById('page-expenses').style.display      = 'none';
+    document.getElementById('page-ai').style.display            = 'none';
 
     const meta = pages[page] || pages.dashboard;
     document.getElementById('pageTitle').textContent = meta.title;
@@ -798,10 +861,77 @@
     } else if (page === 'expenses') {
       document.getElementById('page-expenses').style.display = 'block';
       renderExpenses();
+    } else if (page === 'ai') {
+      document.getElementById('page-ai').style.display = 'block';
+      document.getElementById('ai-input').focus();
     } else {
       document.getElementById('page-dashboard').style.display = 'block';
     }
   };
+
+  // ─── AI CHAT ──────────────────────────────────────────────────────────────
+
+  function appendMsg(containerId, role, text, asMarkdown = false) {
+    const box = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    if (asMarkdown) {
+      div.innerHTML = marked.parse(text);
+    } else {
+      div.textContent = text;
+    }
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  async function doChat(inputId, messagesId, sendBtnId) {
+    const input   = document.getElementById(inputId);
+    const sendBtn = document.getElementById(sendBtnId);
+    const text    = input.value.trim();
+    if (!text) return;
+
+    input.value      = '';
+    input.disabled   = true;
+    sendBtn.disabled = true;
+
+    appendMsg(messagesId, 'user', text);
+    const thinking = appendMsg(messagesId, 'ai', '…');
+
+    try {
+      const res  = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        thinking.innerHTML = marked.parse(data.reply);
+      } else {
+        thinking.textContent = data.error || 'Something went wrong.';
+      }
+    } catch {
+      thinking.textContent = 'Network error — please try again.';
+    } finally {
+      input.disabled   = false;
+      sendBtn.disabled = false;
+      input.focus();
+      document.getElementById(messagesId).scrollTop = document.getElementById(messagesId).scrollHeight;
+    }
+  }
+
+  window.sendChat = () => doChat('ai-input', 'ai-messages', 'ai-send');
+  window.dashSendChat = () => doChat('dash-ai-input', 'dash-ai-messages', 'dash-ai-send');
+
+  // Allow Enter key to send in both chat inputs
+  document.addEventListener('DOMContentLoaded', () => {
+    ['ai-input', 'dash-ai-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el.id === 'ai-input' ? sendChat() : dashSendChat(); }
+      });
+    });
+  });
 
   // ─── DOCUMENT UPLOADS ─────────────────────────────────────────────────────
 
@@ -854,7 +984,7 @@
       const res  = await fetch('/api/upload/context', { method: 'POST', body: form });
       const data = await res.json();
       if (res.ok) {
-        setUploadStatus('ctxStatus', '✓ Context saved for AI Assistant', 'var(--accent)');
+        setUploadStatus('ctxStatus', '✓ Context saved for Pluto', 'var(--accent)');
         showToast('✓ AI context updated!');
       } else {
         setUploadStatus('ctxStatus', `⚠ ${data.error}`, 'var(--danger)');

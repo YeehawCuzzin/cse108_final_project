@@ -2,3 +2,5 @@ Flask==3.0.3
 flask-sqlalchemy
 google-genai
 python-dotenv
+anthropic
+werkzeug
