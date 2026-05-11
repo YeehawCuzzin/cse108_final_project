@@ -19,8 +19,49 @@ function createIntroMessage(displayName) {
   }
 }
 
+function renderInline(text) {
+  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part
+  )
+}
+
+function MarkdownContent({ content, color }) {
+  const textStyle = { fontSize: 15, lineHeight: 1.45, color, letterSpacing: '-0.03em', margin: 0 }
+  const paragraphs = content.trim().split(/\n{2,}/)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {paragraphs.map((para, pi) => {
+        const lines = para.split('\n').filter((l) => l.trim())
+        const isBulletList = lines.some((l) => /^[-*]\s/.test(l.trim()))
+
+        if (isBulletList) {
+          return (
+            <ul key={pi} style={{ paddingLeft: 18, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {lines.map((line, li) => (
+                <li key={li} style={textStyle}>
+                  {renderInline(line.trim().replace(/^[-*]\s/, ''))}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        return (
+          <p key={pi} style={textStyle}>
+            {renderInline(para)}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 function Bubble({ role, content }) {
   const isUser = role === 'user'
+  const textColor = isUser ? '#0F1911' : '#E7ECE8'
 
   return (
     <div style={{ alignSelf: isUser ? 'flex-end' : 'flex-start' }}>
@@ -35,17 +76,10 @@ function Bubble({ role, content }) {
           border: isUser ? '1px solid rgba(103, 218, 131, 0.24)' : '1px solid rgba(101, 160, 114, 0.12)',
         }}
       >
-        <Text
-          style={{
-            fontSize: 15,
-            lineHeight: 1.38,
-            color: isUser ? '#0F1911' : '#E7ECE8',
-            letterSpacing: '-0.03em',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {content}
-        </Text>
+        {isUser
+          ? <Text style={{ fontSize: 15, lineHeight: 1.38, color: textColor, letterSpacing: '-0.03em' }}>{content}</Text>
+          : <MarkdownContent content={content} color={textColor} />
+        }
       </Paper>
       {isUser ? <Text size="xs" c="#8AA392" ta="right" mt={6}>YOU</Text> : null}
     </div>
