@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { Center, Container, Paper, Title, TextInput, PasswordInput, Button, Text, Anchor, Stack, Image } from '@mantine/core'
+import flowfundLogo from '../assets/flowfund.svg'
 import { useAuth } from '../context/AuthContext'
-import {
-  Container, Paper, Title, TextInput, PasswordInput,
-  Button, Text, Anchor, Stack, Center
-} from '@mantine/core'
 
 export default function Register() {
   const [username, setUsername] = useState('')
@@ -36,7 +34,7 @@ export default function Register() {
   return (
     <Container size={420} mt={80}>
       <Center mb="lg">
-        <Title order={1}>FlowFundAI</Title>
+        <Image src={flowfundLogo} alt="FlowFund" w={190} fit="contain" />
       </Center>
       <Paper withBorder shadow="md" p={30} radius="md">
         <Title order={2} mb="md" ta="center">Create Account</Title>

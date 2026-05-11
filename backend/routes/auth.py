@@ -54,3 +54,34 @@ def me():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     return jsonify({'user': user.to_dict()}), 200
+
+
+@auth_bp.route('/profile-image', methods=['PUT'])
+@jwt_required()
+def update_profile_image():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+    profile_svg = (data.get('profile_svg') or '').strip()
+
+    if profile_svg:
+        normalized_svg = profile_svg.lower()
+
+        if '<svg' not in normalized_svg:
+            return jsonify({'error': 'Profile image must be a valid SVG file'}), 400
+
+        if '<script' in normalized_svg:
+            return jsonify({'error': 'SVG scripts are not allowed'}), 400
+
+        if len(profile_svg) > 500_000:
+            return jsonify({'error': 'Profile image is too large'}), 400
+
+        user.profile_svg = profile_svg
+    else:
+        user.profile_svg = None
+
+    db.session.commit()
+    return jsonify({'message': 'Profile image updated', 'user': user.to_dict()}), 200

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { apiFetch } from '../lib/api'
 
 const AuthContext = createContext(null)
 
@@ -7,42 +8,73 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => (res.ok ? res.json() : Promise.reject()))
-        .then(data => setUser(data.user))
-        .catch(() => localStorage.removeItem('token'))
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
+    let active = true
+
+    async function bootstrap() {
+      const token = localStorage.getItem('token')
+
+      if (!token) {
+        if (active) {
+          setLoading(false)
+        }
+        return
+      }
+
+      try {
+        const data = await apiFetch('/api/auth/me')
+        if (active) {
+          setUser(data.user)
+        }
+      } catch {
+        localStorage.removeItem('token')
+        if (active) {
+          setUser(null)
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    bootstrap()
+
+    return () => {
+      active = false
     }
   }, [])
 
   const login = async (username, password) => {
-    const res = await fetch('/api/auth/login', {
+    const data = await apiFetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
     localStorage.setItem('token', data.token)
     setUser(data.user)
   }
 
   const register = async (username, password) => {
-    const res = await fetch('/api/auth/register', {
+    const data = await apiFetch('/api/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
     localStorage.setItem('token', data.token)
     setUser(data.user)
+  }
+
+  const refreshUser = async () => {
+    const data = await apiFetch('/api/auth/me')
+    setUser(data.user)
+    return data.user
+  }
+
+  const updateProfileImage = async (profileSvg) => {
+    const data = await apiFetch('/api/auth/profile-image', {
+      method: 'PUT',
+      body: JSON.stringify({ profile_svg: profileSvg })
+    })
+    setUser(data.user)
+    return data.user
   }
 
   const logout = () => {
@@ -51,7 +83,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, refreshUser, updateProfileImage }}>
       {children}
     </AuthContext.Provider>
   )
