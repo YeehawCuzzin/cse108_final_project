@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from pathlib import Path
@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 BACKEND_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BACKEND_DIR.parent
+FRONTEND_DIST = PROJECT_ROOT / 'frontend' / 'dist'
 
 load_dotenv(PROJECT_ROOT / '.env')
 load_dotenv(BACKEND_DIR / '.env')
@@ -27,8 +28,13 @@ def ensure_schema():
         db.session.execute(text('ALTER TABLE user ADD COLUMN profile_svg TEXT'))
         db.session.commit()
 
+
 def create_app():
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        static_folder=str(FRONTEND_DIST),
+        static_url_path=''
+    )
 
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///flowfundai.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -46,6 +52,19 @@ def create_app():
     @app.route('/api/health', methods=['GET'])
     def health():
         return {'status': 'ok', 'message': 'FlowFundAI backend is running'}, 200
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_react_app(path):
+        if path.startswith('api/'):
+            return {'error': 'API route not found'}, 404
+
+        requested_file = FRONTEND_DIST / path
+
+        if path and requested_file.exists():
+            return send_from_directory(str(FRONTEND_DIST), path)
+
+        return send_from_directory(str(FRONTEND_DIST), 'index.html')
 
     with app.app_context():
         db.create_all()
