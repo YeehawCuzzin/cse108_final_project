@@ -4,6 +4,7 @@ import ProtectedLayout from './components/ProtectedLayout'
 import Dashboard from './pages/Dashboard'
 import Imports from './pages/Imports'
 import Transactions from './pages/Expenses'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Settings from './pages/Settings'
@@ -11,9 +12,9 @@ import Settings from './pages/Settings'
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       <Route
         element={(

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Center, Container, Paper, Title, TextInput, PasswordInput, Button, Text, Anchor, Stack, Image } from '@mantine/core'
-import flowfundLogo from '../assets/flowfund.svg'
+import { Button, PasswordInput, Stack, Text, TextInput, Anchor } from '@mantine/core'
+import AuthShell from '../components/AuthShell'
 import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
@@ -32,41 +32,93 @@ export default function Register() {
   }
 
   return (
-    <Container size={420} mt={80}>
-      <Center mb="lg">
-        <Image src={flowfundLogo} alt="FlowFund" w={190} fit="contain" />
-      </Center>
-      <Paper withBorder shadow="md" p={30} radius="md">
-        <Title order={2} mb="md" ta="center">Create Account</Title>
+    <AuthShell
+      mode="register"
+      title="Create your account"
+      description="Set up your workspace and start bringing spending, imports, and Pluto into one place."
+    >
         <form onSubmit={handleSubmit}>
-          <Stack>
+          <Stack gap={18}>
             <TextInput
               label="Username"
               value={username}
               onChange={e => setUsername(e.target.value)}
               required
+              styles={{
+                label: { marginBottom: 8, fontSize: 14, color: '#E3E8E4' },
+                input: {
+                  height: 48,
+                  background: '#171A17',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#F1F3F1',
+                },
+              }}
             />
             <PasswordInput
               label="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
+              styles={{
+                label: { marginBottom: 8, fontSize: 14, color: '#E3E8E4' },
+                input: {
+                  height: 48,
+                  background: '#171A17',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#F1F3F1',
+                },
+                innerInput: {
+                  color: '#F1F3F1',
+                },
+              }}
             />
             <PasswordInput
               label="Confirm Password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               required
+              styles={{
+                label: { marginBottom: 8, fontSize: 14, color: '#E3E8E4' },
+                input: {
+                  height: 48,
+                  background: '#171A17',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#F1F3F1',
+                },
+                innerInput: {
+                  color: '#F1F3F1',
+                },
+              }}
             />
-            {error && <Text c="red" size="sm">{error}</Text>}
-            <Button type="submit" fullWidth mt="xs" loading={loading}>Create Account</Button>
+            {error && <Text c="#FF9393" size="sm">{error}</Text>}
+            <Button
+              type="submit"
+              fullWidth
+              loading={loading}
+              radius="xl"
+              styles={{
+                root: {
+                  height: 48,
+                  background: '#66DD84',
+                  color: '#101610',
+                  fontSize: 15,
+                  fontWeight: 700,
+                },
+                label: {
+                  letterSpacing: '-0.03em',
+                },
+              }}
+            >
+              Create Account
+            </Button>
+            <Text ta="center" size="sm" c="#98A29B">
+              Already have an account?{' '}
+              <Anchor component={Link} to="/login" c="#DDE5DE">
+                Log In
+              </Anchor>
+            </Text>
           </Stack>
         </form>
-        <Text ta="center" mt="md" size="sm">
-          Already have an account?{' '}
-          <Anchor component={Link} to="/login">Log In</Anchor>
-        </Text>
-      </Paper>
-    </Container>
+    </AuthShell>
   )
 }

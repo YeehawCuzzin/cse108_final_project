@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Center, Container, Paper, Title, TextInput, PasswordInput, Button, Text, Anchor, Stack, Image } from '@mantine/core'
-import flowfundLogo from '../assets/flowfund.svg'
+import { Button, PasswordInput, Stack, Text, TextInput, Anchor } from '@mantine/core'
+import AuthShell from '../components/AuthShell'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
@@ -33,44 +33,84 @@ export default function Login() {
   }
 
   return (
-    <Container size={420} mt={80}>
-      <Center mb="lg">
-        <Image src={flowfundLogo} alt="FlowFund" w={190} fit="contain" />
-      </Center>
-      <Paper withBorder shadow="md" p={30} radius="md">
-        <Title order={2} mb="md" ta="center">Log In</Title>
+    <AuthShell
+      mode="login"
+      title="Log in"
+      description="Pick up where you left off and let Pluto keep tracking the patterns in your spending."
+    >
         <form onSubmit={handleSubmit}>
-          <Stack>
+          <Stack gap={18}>
             <TextInput
               label="Username"
               value={username}
               onChange={e => setUsername(e.target.value)}
               required
+              styles={{
+                label: { marginBottom: 8, fontSize: 14, color: '#E3E8E4' },
+                input: {
+                  height: 48,
+                  background: '#171A17',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#F1F3F1',
+                },
+              }}
             />
             <PasswordInput
               label="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
+              styles={{
+                label: { marginBottom: 8, fontSize: 14, color: '#E3E8E4' },
+                input: {
+                  height: 48,
+                  background: '#171A17',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#F1F3F1',
+                },
+                innerInput: {
+                  color: '#F1F3F1',
+                },
+              }}
             />
             {notFound && (
-              <Text c="red" size="sm">
+              <Text c="#FF9393" size="sm">
                 This account does not exist. Make sure to{' '}
-                <Anchor component={Link} to="/register" c="red" fw={600}>
+                <Anchor component={Link} to="/register" c="#FF9393" fw={600}>
                   register
                 </Anchor>{' '}
                 a new account.
               </Text>
             )}
-            {error && <Text c="red" size="sm">{error}</Text>}
-            <Button type="submit" fullWidth mt="xs" loading={loading}>Log In</Button>
+            {error && <Text c="#FF9393" size="sm">{error}</Text>}
+            <Button
+              type="submit"
+              fullWidth
+              loading={loading}
+              radius="xl"
+              styles={{
+                root: {
+                  height: 48,
+                  background: '#66DD84',
+                  color: '#101610',
+                  fontSize: 15,
+                  fontWeight: 700,
+                },
+                label: {
+                  letterSpacing: '-0.03em',
+                },
+              }}
+            >
+              Log In
+            </Button>
+            <Text ta="center" size="sm" c="#98A29B">
+              Don&apos;t have an account?{' '}
+              <Anchor component={Link} to="/register" c="#DDE5DE">
+                Register
+              </Anchor>
+            </Text>
           </Stack>
         </form>
-        <Text ta="center" mt="md" size="sm">
-          Don't have an account?{' '}
-          <Anchor component={Link} to="/register">Register</Anchor>
-        </Text>
-      </Paper>
-    </Container>
+    </AuthShell>
   )
 }
