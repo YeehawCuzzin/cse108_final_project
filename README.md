@@ -3,58 +3,56 @@
 
 ---
 
-## Overview  
+## Overview
 
-FlowFundAI is a budgeting application designed to help users track their finances and make informed financial decisions through the use of an integrated AI assistant.  
+FlowFundAI is a personal finance tracking application designed to help users track their finances and make informed financial decisions through the use of an integrated AI assistant. Users can log transactions manually or import them directly from PDF bank statements using Google Gemini 2.5 Flash.
 
-Rather than simply displaying financial data, FlowFundAI analyzes spending patterns, provides real-time insights, and offers personalized recommendations to improve financial habits.
+An integrated AI assistant named Pluto, powered by Claude Sonnet, answers natural language questions about spending using the user's real transaction history and any uploaded financial documents as context.
 
 ---
 
-## Purpose  
+## Purpose
 
-Traditional budgeting tools often present raw data without meaningful guidance. FlowFundAI addresses this gap by combining financial tracking with intelligent analysis, enabling users to better understand and manage their money.  
+Traditional budgeting tools display raw numbers without meaningful context. FlowFundAI addresses this by pairing transaction tracking with Pluto, an AI assistant that can answer plain-language questions about your finances, reference specific categories and amounts from your history, and suggest concrete ways to reduce spending.
 
 The platform is designed to simplify financial decision-making by turning complex data into clear, actionable insights.
+---
+
+## Who It Helps
+
+FlowFundAI is built to support a wide range of users, including:
+
+- Students managing limited budgets and day-to-day expenses
+- Young professionals working to build consistent saving habits
+- Individuals who want to import bank statements and understand their spending without manual data entry
+- Anyone who prefers asking questions about their finances in plain language rather than reading charts alone
 
 ---
 
-## Who It Helps  
+## Key Features
 
-FlowFundAI is built to support a wide range of users, including:  
-
-- Students managing limited budgets and day-to-day expenses  
-- Young professionals working to build consistent saving habits  
-- Individuals seeking structured financial guidance  
-- Users who want a more intuitive and interactive approach to budgeting  
-
----
-
-## Key Features  
-
-- Expense and income tracking  
-- Categorization of transactions  
-- AI-powered financial assistant for questions and guidance  
-- Personalized recommendations for saving and spending  
-- Automated budgeting workflows  
-- Clear insights into financial behavior and trends  
+- Manual transaction entry with category tagging (Food, Transport, Housing, Entertainment, Health, Shopping, Education, Subscriptions, Other)
+- PDF bank statement import: Gemini 2.5 Flash automatically parses and categorizes debit transactions
+- Dashboard with cash flow chart, category breakdown, and recent transaction summary
+- Pluto AI assistant: answers questions using your actual transaction data and conversation history
+- Document context upload: attach PDF, TXT, or MD files to give Pluto additional financial context (account summaries, goals, statements)
+- Per-user data isolation with JWT authentication and bcrypt password hashing
 
 ---
 
-## How It Works  
+## How It Works
 
-FlowFundAI combines data tracking with AI-driven analysis:  
-
-1. Users input or connect financial data  
-2. Transactions are categorized and analyzed  
-3. The AI assistant interprets spending behavior  
-4. Users receive insights, recommendations, and answers in real time  
+1. Create an account and log in
+2. Add transactions manually on the Transactions page, or import from a PDF bank statement on the Imports page
+3. Optionally upload financial documents (PDF, TXT, MD) to give Pluto additional context about your accounts or goals
+4. Ask Pluto questions in the chat rail, it answers using your real transaction history and any uploaded documents
+5. Review your Dashboard for a visual summary of spending trends, category totals, and recent activity
 
 ---
 
-## Value Proposition  
+## Value Proposition
 
-FlowFundAI goes beyond traditional budgeting tools by acting as a financial assistant rather than a static dashboard. It enables users to not only monitor their finances but also understand and improve them through intelligent support.
+FlowFundAI acts as a financial assistant rather than a static dashboard. Instead of manually interpreting charts, users can ask Pluto direct questions "What did I spend most on this month?" or "How could I trim dining costs?" and receive specific, data-backed answers drawn from their own transaction history.
 
 ---
 
@@ -132,13 +130,15 @@ Use this URL in the browser.
 
 ## Current Verified Features
 
-- User registration
-- User login
-- User logout
-- JWT-based authentication
-- Protected dashboard route
-- Protected settings route
-- Account/settings/privacy page
+- User registration, login, and logout
+- JWT-based authentication with bcrypt password hashing
+- Protected dashboard, transactions, imports, and settings routes
+- Manual transaction entry and deletion
+- PDF bank statement import via Gemini 2.5 Flash
+- Spending dashboard with cash flow chart, category breakdown, and recent transactions
+- Pluto AI chat assistant (Claude Sonnet) with conversation history and transaction context
+- Document context upload and clear (PDF, TXT, MD) for Pluto
+- Per-user data isolation across all features
 
 ---
 
@@ -150,7 +150,7 @@ The current app uses username/password authentication. Passwords are hashed with
 
 ## Gemini API / AI Features
 
-The PDF upload, document parsing, and AI assistant features are planned to use Google Gemini 2.5 Flash.
+PDF bank statement import and document context extraction use Google Gemini 2.5 Flash. The Pluto AI assistant uses the Anthropic Claude Sonnet API.
 
 To use Gemini-powered features, create a `.env` file for the backend and add your API key:
 
@@ -191,9 +191,9 @@ Do not use real financial information in demo accounts.
 
 Planned enhancements include:
 
-- Integration with banking APIs
+- Integration with banking APIs for automatic transaction sync
 - QuickBooks integration
-- Advanced analytics and predictive insights
-- Expanded personalization of AI recommendations
-- Full AI assistant integration
+- Advanced analytics and predictive spending insights
+- Expanded personalization of Pluto's recommendations
+- Income handling to understanding monthly cash flow of user
 - Mobile optimization and cross-platform accessibility
