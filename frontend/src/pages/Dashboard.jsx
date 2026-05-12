@@ -404,18 +404,12 @@ function CategoryCard({ rows, totalSpent }) {
         minHeight: 365,
       }}
     >
-      <Group justify="space-between" align="flex-start" mb={16}>
-        <div>
-          <Title order={3} style={{ fontSize: 20, lineHeight: 1.1, color: '#F3F5F3', letterSpacing: '-0.04em' }}>
-            Spending by category
-          </Title>
-          <Text style={{ fontSize: 13, color: '#77807A' }}>{rows.length} categories</Text>
-        </div>
-
-        <Paper radius={999} px={12} py={6} style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'transparent' }}>
-          <Text style={{ fontSize: 12, color: '#7C847F' }}>Manage</Text>
-        </Paper>
-      </Group>
+      <div style={{ marginBottom: 16 }}>
+        <Title order={3} style={{ fontSize: 20, lineHeight: 1.1, color: '#F3F5F3', letterSpacing: '-0.04em' }}>
+          Spending by category
+        </Title>
+        <Text style={{ fontSize: 13, color: '#77807A' }}>{rows.length} categories</Text>
+      </div>
 
       <Stack gap={16}>
         {rows.map((row) => (
