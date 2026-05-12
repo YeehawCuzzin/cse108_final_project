@@ -283,33 +283,35 @@ export default function Expenses() {
               </Group>
 
               {transactions.length ? (
-                <Table highlightOnHover horizontalSpacing="md" verticalSpacing="sm">
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Description</Table.Th>
-                      <Table.Th>Category</Table.Th>
-                      <Table.Th>Amount</Table.Th>
-                      <Table.Th />
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {transactions.slice(0, 8).map((transaction) => (
-                      <Table.Tr key={transaction.id}>
-                        <Table.Td>
-                          <Text c="white" fw={600}>{transaction.description}</Text>
-                          <Text size="xs" c="#A5ADA8">{transaction.date}</Text>
-                        </Table.Td>
-                        <Table.Td><Text c="#DCE1DD">{transaction.category}</Text></Table.Td>
-                        <Table.Td><Text c="#DCE1DD">${Number(transaction.amount).toFixed(2)}</Text></Table.Td>
-                        <Table.Td>
-                          <Button variant="subtle" color="red" size="compact-sm" onClick={() => handleDelete(transaction.id)}>
-                            Delete
-                          </Button>
-                        </Table.Td>
+                <div style={{ overflowX: 'auto' }}>
+                  <Table highlightOnHover horizontalSpacing="md" verticalSpacing="sm">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Description</Table.Th>
+                        <Table.Th>Category</Table.Th>
+                        <Table.Th>Amount</Table.Th>
+                        <Table.Th />
                       </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {transactions.slice(0, 8).map((transaction) => (
+                        <Table.Tr key={transaction.id}>
+                          <Table.Td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <Text c="white" fw={600} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{transaction.description}</Text>
+                            <Text size="xs" c="#A5ADA8">{transaction.date}</Text>
+                          </Table.Td>
+                          <Table.Td><Text c="#DCE1DD">{transaction.category}</Text></Table.Td>
+                          <Table.Td><Text c="#DCE1DD">${Number(transaction.amount).toFixed(2)}</Text></Table.Td>
+                          <Table.Td>
+                            <Button variant="subtle" color="red" size="compact-sm" onClick={() => handleDelete(transaction.id)}>
+                              Delete
+                            </Button>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </div>
               ) : (
                 <Text c="#B5BAB7">No transactions yet. This panel will fill as soon as the first expense is saved.</Text>
               )}

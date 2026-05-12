@@ -78,22 +78,6 @@ function toKey(date) {
   return startOfDay(date).toISOString().slice(0, 10)
 }
 
-function buildPreviewTransactions() {
-  const today = new Date()
-
-  return [
-    { id: 'preview-1', description: "Trader Joe's", category: 'Food', amount: 48.2, date: toKey(daysAgo(today, 0)) },
-    { id: 'preview-2', description: 'Uber Eats', category: 'Entertainment', amount: 22.4, date: toKey(daysAgo(today, 0)) },
-    { id: 'preview-3', description: 'Spotify', category: 'Subscriptions', amount: 11.99, date: toKey(daysAgo(today, 1)) },
-    { id: 'preview-4', description: 'Shell', category: 'Transport', amount: 53, date: toKey(daysAgo(today, 2)) },
-    { id: 'preview-5', description: 'Apartment Rent', category: 'Housing', amount: 340, date: toKey(daysAgo(today, 6)) },
-    { id: 'preview-6', description: 'Safeway', category: 'Food', amount: 84.35, date: toKey(daysAgo(today, 8)) },
-    { id: 'preview-7', description: 'AMC Theatres', category: 'Entertainment', amount: 95.8, date: toKey(daysAgo(today, 10)) },
-    { id: 'preview-8', description: 'Netflix', category: 'Subscriptions', amount: 14.99, date: toKey(daysAgo(today, 12)) },
-    { id: 'preview-9', description: "Trader Joe's", category: 'Food', amount: 61.4, date: toKey(daysAgo(today, 15)) },
-    { id: 'preview-10', description: 'Target', category: 'Shopping', amount: 78.9, date: toKey(daysAgo(today, 18)) },
-  ]
-}
 
 function sumTransactions(transactions) {
   return transactions.reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0)
@@ -701,15 +685,13 @@ export default function Dashboard() {
   }, [])
 
   const derived = useMemo(() => {
-    const preview = buildPreviewTransactions()
-    const sourceBase = transactions.length ? transactions : preview
     const query = searchValue.trim().toLowerCase()
     const source = query
-      ? sourceBase.filter((transaction) => {
+      ? transactions.filter((transaction) => {
           const haystack = `${transaction.description} ${transaction.category} ${transaction.date}`.toLowerCase()
           return haystack.includes(query)
         })
-      : sourceBase
+      : transactions
 
     const today = startOfDay(new Date())
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -746,7 +728,6 @@ export default function Dashboard() {
     const sparkBars = sparkSource.map((value) => Math.max(Math.round((value / maxSpark) * 18), 6))
 
     return {
-      usingPreview: !transactions.length,
       totalSpent,
       thisMonth,
       totalChange: calculateChange(thisMonth, lastMonth),
@@ -935,7 +916,7 @@ export default function Dashboard() {
             alignItems: 'start',
           }}
         >
-          <InteractiveCashFlowCard charts={derived.charts} preview={derived.usingPreview} />
+          <InteractiveCashFlowCard charts={derived.charts} preview={false} />
 
           <Stack gap={14}>
             <CategoryCard rows={derived.categoryRows} totalSpent={derived.totalSpent} />
